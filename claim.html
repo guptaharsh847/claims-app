@@ -7,74 +7,112 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 
-  <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full">
-    <h2 class="text-xl font-semibold text-slate-800 mb-6">Raise a Claim</h2>
+  <div class="bg-white rounded-2xl shadow-xl p-8 max-w-3xl w-full border border-slate-100">
+    
+    <!-- Header with Home Button -->
+    <div class="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">New Expense Claim</h2>
+        <p class="text-slate-500 text-sm mt-1">Fill in the details below to submit a request</p>
+      </div>
+      <a href="index.html" class="text-slate-500 hover:text-indigo-600 transition flex items-center gap-2 text-sm font-medium bg-slate-50 px-4 py-2 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+        Home
+      </a>
+    </div>
 
-    <form id="claimForm" class="space-y-4">
+    <form id="claimForm" class="space-y-6">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input name="name" placeholder="Full Name" required class="input" />
-        <input name="email" type="email" placeholder="Email" required class="input" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+          <input name="name" placeholder="Enter full name" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400" />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Email Address <span class="text-red-500">*</span></label>
+          <input name="email" type="email" placeholder="Enter email address" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400" />
+        </div>
 
-        <select name="department" required class="input">
-          <option value="" disabled selected>Select Base</option>
-          <option value="Ritudvipa">Ritudvipa</option>
-          <option value="Antardvipa">Antardvipa</option>
-          <option value="Others">Others</option>
-        </select>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Base / Department <span class="text-red-500">*</span></label>
+          <select name="department" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all bg-white">
+            <option value="" disabled selected>Select Base</option>
+            <option value="Ritudvipa">Ritudvipa</option>
+            <option value="Antardvipa">Antardvipa</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
 
-        <input name="date" type="date" required class="input" />
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Expense Date <span class="text-red-500">*</span></label>
+          <input name="date" type="date" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-slate-600" />
+        </div>
 
-        <select name="type" required class="input">
-          <option value="" disabled selected>Select Claim Type</option>
-          <option value="Regular">Regular</option>
-          <option value="Advance">Advance</option>
-        </select>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Claim Type <span class="text-red-500">*</span></label>
+          <select name="type" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all bg-white">
+            <option value="" disabled selected>Select Type</option>
+            <option value="Regular">Regular</option>
+            <option value="Advance">Advance</option>
+          </select>
+        </div>
 
-        <input name="amount" type="number" placeholder="Amount" required class="input" />
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Amount (₹) <span class="text-red-500">*</span></label>
+          <input name="amount" type="number" placeholder="0.00" required 
+            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400" />
+        </div>
       </div>
 
-      <textarea name="description" rows="3" placeholder="Claim Description" class="input"></textarea>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <textarea name="description" rows="3" placeholder="Enter details about the expense..." 
+          class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400"></textarea>
+      </div>
 
-      <input type="file" id="receiptFile" name="receipt" class="hidden" accept="image/*,application/pdf">
-
-      <label for="receiptFile"
-        class="block border-2 border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition">
-        Click to Upload Receipt
-      </label>
-
-      <p id="fileName" class="text-sm text-indigo-600 text-center font-medium"></p>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Receipt / Proof</label>
+        <input type="file" id="receiptFile" name="receipt" class="hidden" accept="image/*,application/pdf">
+        <label for="receiptFile"
+          class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-300 rounded-xl cursor-pointer bg-slate-50 hover:bg-indigo-50 hover:border-indigo-400 transition-all group">
+          <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            <svg class="w-8 h-8 mb-3 text-slate-400 group-hover:text-indigo-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <p class="mb-1 text-sm text-slate-500"><span class="font-semibold text-indigo-600">Click to upload</span> or drag and drop</p>
+            <p class="text-xs text-slate-400">PDF, PNG, JPG (Max 10MB)</p>
+          </div>
+        </label>
+        <p id="fileName" class="text-sm text-indigo-600 text-center font-medium mt-2 min-h-[20px]"></p>
+      </div>
 
       <button type="submit"
-        class="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
+        class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 active:scale-[0.98]">
         Submit Claim
       </button>
 
-      <a href="status.html" class="block text-center mt-4 text-indigo-600 underline">
-        View My Claims
-      </a>
-
-      <p id="result" class="text-center mt-2"></p>
+      <div class="text-center pt-2 border-t border-slate-100 mt-6">
+        <a href="status.html" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition">
+          View My Claims History
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+          </svg>
+        </a>
+      </div>
+      
+      <p id="result" class="text-center mt-2 text-sm font-medium"></p>
     </form>
   </div>
 
   <script src="js/app.js"></script>
-
-  <style>
-    .input {
-      width: 100%;
-      padding: 0.6rem;
-      border-radius: 0.5rem;
-      border: 1px solid #cbd5e1;
-      outline: none;
-    }
-    .input:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 1px #6366f1;
-    }
-  </style>
 
 </body>
 </html>
