@@ -1,0 +1,26 @@
+function doPost(e) {
+  try {
+    // 1. YOUR FOLDER ID GOES HERE
+    var folderId = "1Hd85SnaLlhTIvQzYH4oeHSdmTqkchFEM";
+    var folder = DriveApp.getFolderById(folderId);
+    
+    // 2. Parse the incoming data
+    var data = JSON.parse(e.postData.contents);
+    var fileData = Utilities.base64Decode(data.base64);
+    var blob = Utilities.newBlob(fileData, data.type, data.name);
+    
+    // 3. Create the file INSIDE that specific folder
+    var file = folder.createFile(blob);
+    
+    return ContentService.createTextOutput(JSON.stringify({
+      "status": "success",
+      "fileUrl": file.getUrl()
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      "status": "error",
+      "message": error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
