@@ -8,7 +8,7 @@
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <script>
+  <!-- <script>
     tailwind.config = {
       theme: {
         extend: {
@@ -18,32 +18,59 @@
         }
       }
     }
-  </script>
+  </script> -->
 </head>
 
-<body class="bg-slate-100 min-h-screen flex items-center justify-center">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center justify-center p-4 relative">
 
-  <div class="bg-white rounded-xl shadow-xl p-8 max-w-md w-full text-center">
-    <h1 class="text-2xl font-bold text-slate-800">
-      Claims Management Portal
-    </h1>
+  <a href="login.html" class="absolute top-6 right-6 flex items-center gap-2 bg-white text-indigo-600 border border-indigo-100 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-50 hover:border-indigo-200 transition shadow-sm">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+    </svg>
+    Login
+  </a>
 
-    <p class="text-slate-500 mt-2">
-      Submit and track your claims securely
-    </p>
+  <div class="bg-white rounded-2xl shadow-xl p-10 max-w-lg w-full text-center border border-slate-100">
+    <div class="mb-6">
+      <div class="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm rotate-3 hover:rotate-6 transition-transform duration-300">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-slate-800 mb-3 tracking-tight">
+        Claims Portal HELP
+      </h1>
+      <p class="text-slate-500 text-lg font-medium">
+        Submit and track your service expenses from HELP
+      </p>
+    </div>
 
-    <div class="mt-6 space-y-4">
+    <div class="text-slate-500 mb-10 text-sm leading-relaxed px-4">
+      Welcome to the centralized claims for HELP Team. This tool is designed to streamline the reimbursement process from HELP. Use this platform to submit new expense claims, upload receipts, and track the approval status of your previous submissions efficiently.
+    </div>
+
+    <div class="space-y-4 px-2">
       <a href="claim.html"
-         class="block bg-primary text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
-        Raise a Claim
+         class="group flex items-center justify-center w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 active:scale-[0.98]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Raise a New Claim
       </a>
 
       <a href="status.html"
-         class="block bg-indigo-100 text-indigo-700 py-3 rounded-lg font-medium hover:bg-indigo-200 transition">
+         class="group flex items-center justify-center w-full bg-white border border-slate-200 text-slate-600 py-4 rounded-xl font-semibold hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition shadow-sm active:scale-[0.98]">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 group-hover:scale-110 transition-transform text-slate-400 group-hover:text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
         View Claim Status
       </a>
     </div>
   </div>
+
+  <footer class="mt-12 text-slate-400 font-medium text-sm tracking-wide opacity-80 hover:opacity-100 transition-opacity">
+    In the Service of Krishna
+  </footer>
 
 </body>
 </html>
