@@ -10,13 +10,9 @@
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
   <div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full">
-    <h2 class="text-xl font-semibold text-slate-800 mb-6">
-      Raise a Claim
-    </h2>
+    <h2 class="text-xl font-semibold text-slate-800 mb-6">Raise a Claim</h2>
 
-    <form id="claimForm"
-          class="space-y-4"
-          enctype="multipart/form-data">
+    <form id="claimForm" class="space-y-4">
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input name="name" placeholder="Full Name" required class="input" />
@@ -40,51 +36,45 @@
         <input name="amount" type="number" placeholder="Amount" required class="input" />
       </div>
 
-      <textarea name="description"
-                rows="3"
-                placeholder="Claim Description"
-                class="input"></textarea>
+      <textarea name="description" rows="3" placeholder="Claim Description" class="input"></textarea>
 
-     
-       <a id="uploadBtn"
-   target="_blank"
-   class="text-indigo-600 underline">
- <label class="block border-2 border-dashed rounded-lg p-4 text-center cursor-pointer text-slate-600 hover:border-indigo-400">
-        Upload Receipt  </label>
-</a>
-    
+      <input type="file" id="receiptFile" name="receipt" class="hidden" accept="image/*,application/pdf">
 
-      <p id="fileName" class="text-sm text-slate-500 text-center"></p>
-      <button
-        type="submit"
+      <label for="receiptFile"
+        class="block border-2 border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer text-slate-600 hover:border-indigo-400 hover:bg-indigo-50 transition">
+        Click to Upload Receipt
+      </label>
+
+      <p id="fileName" class="text-sm text-indigo-600 text-center font-medium"></p>
+
+      <button type="submit"
         class="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition">
         Submit Claim
       </button>
 
-      <a href="status.html"
-         class="block text-center mt-4 text-indigo-600 underline">
+      <a href="status.html" class="block text-center mt-4 text-indigo-600 underline">
         View My Claims
       </a>
 
-      <p id="result" class="text-green-600 text-center mt-2"></p>
+      <p id="result" class="text-center mt-2"></p>
     </form>
   </div>
 
-<script src="js/app.js"></script>
+  <script src="js/app.js"></script>
 
-<style>
-  .input {
-    width: 100%;
-    padding: 0.6rem;
-    border-radius: 0.5rem;
-    border: 1px solid #cbd5e1;
-    outline: none;
-  }
-  .input:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 1px #6366f1;
-  }
-</style>
+  <style>
+    .input {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      outline: none;
+    }
+    .input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px #6366f1;
+    }
+  </style>
 
 </body>
 </html>
