@@ -1,3 +1,5 @@
+// const API_URL =
+//   "https://script.google.com/macros/s/AKfycbzTw1p2p-ph6hbgMl5MKM6kzfuOQkFHJoRwRubpq7g/dev";
 const API_URL =
   "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec";
 
@@ -85,7 +87,12 @@ async function searchClaim() {
     return;
   }
 
-  output.innerHTML = "Loading...";
+  output.innerHTML = `
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-100 border-t-indigo-600 mb-4"></div>
+      <p class="text-slate-500 font-medium animate-pulse">Searching records...</p>
+    </div>
+  `;
 
   try {
     const res = await fetch(
@@ -277,7 +284,12 @@ async function loadClaims() {
   const status = document.getElementById("statusFilter").value;
   const claimsDiv = document.getElementById("claims");
 
-  claimsDiv.innerHTML = "Loading claims...";
+  claimsDiv.innerHTML = `
+    <div class="flex flex-col items-center justify-center py-12">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-100 border-t-indigo-600 mb-4"></div>
+      <p class="text-slate-500 font-medium animate-pulse">Loading claims...</p>
+    </div>
+  `;
 
   try {
     const res = await fetch(
@@ -318,12 +330,22 @@ function renderAdminClaims(claims) {
     `;
 
   claims.forEach(c => {
+      let statusClass = "bg-slate-100 text-slate-600";
+      if (c.status === "Submitted") statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
+      else if (c.status === "Pending") statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
+      else if (c.status === "Reimbursed") statusClass = "bg-green-50 text-green-700 border border-green-100";
+      else if (c.status === "Declined") statusClass = "bg-red-50 text-red-700 border border-red-100";
+
       html += `
         <tr class="hover:bg-slate-50">
           <td class="border p-2">${c.claimId}</td>
           <td class="border p-2">${c.email}</td>
           <td class="border p-2">₹${c.amount}</td>
-          <td class="border p-2 font-medium">${c.status}</td>
+          <td class="border p-2 font-medium">
+            <span class="px-2 py-1 rounded-full text-xs ${statusClass}">
+              ${c.status}
+            </span>
+          </td>
           <td class="border p-2">
             <select
               class="border p-1 rounded"
@@ -396,4 +418,103 @@ async function updateStatus(claimId, status) {
 /* Auto-load claims on page open */
 if (document.getElementById("claims")) {
   loadClaims();
+}
+
+/* ======================================================
+   FORGOT PASSWORD LOGIC
+====================================================== */
+
+function showForgot() {
+  document.getElementById("login-form").classList.add("hidden");
+  document.getElementById("forgot-form").classList.remove("hidden");
+  document.getElementById("home-link").classList.add("hidden");
+  document.getElementById("page-title").textContent = "Reset Password";
+  document.getElementById("page-desc").textContent = "Reset your password";
+  document.getElementById("msg").textContent = "";
+  document.getElementById("msg").className = "mt-4 min-h-[20px]";
+}
+
+function showLogin() {
+  document.getElementById("forgot-form").classList.add("hidden");
+  document.getElementById("login-form").classList.remove("hidden");
+  document.getElementById("home-link").classList.remove("hidden");
+  document.getElementById("page-title").textContent = "Welcome Back";
+  document.getElementById("page-desc").textContent = "Please login to continue";
+  document.getElementById("step-1").classList.remove("hidden");
+  document.getElementById("step-2").classList.add("hidden");
+  document.getElementById("msg").textContent = "";
+  document.getElementById("msg").className = "mt-4 min-h-[20px]";
+}
+
+async function requestOtp() {
+  const mobile = document.getElementById("reset-mobile").value;
+  const msg = document.getElementById("msg");
+
+  if (!mobile) {
+    msg.textContent = "Please enter mobile number";
+    msg.className = "mt-4 text-center text-sm text-red-500";
+    return;
+  }
+
+  msg.textContent = "Sending OTP...";
+  msg.className = "mt-4 text-center text-sm text-indigo-600 animate-pulse";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "sendOtp", mobile })
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      msg.textContent = "OTP sent to your registered email!";
+      msg.className = "mt-4 text-center text-sm text-green-600";
+      document.getElementById("step-1").classList.add("hidden");
+      document.getElementById("step-2").classList.remove("hidden");
+    } else {
+      msg.textContent = data.message || "User not found";
+      msg.className = "mt-4 text-center text-sm text-red-500";
+    }
+  } catch (err) {
+    msg.textContent = "Error sending OTP";
+    msg.className = "mt-4 text-center text-sm text-red-500";
+  }
+}
+
+async function submitReset() {
+  const mobile = document.getElementById("reset-mobile").value;
+  const otp = document.getElementById("otp").value;
+  const newPassword = document.getElementById("new-password").value;
+  const msg = document.getElementById("msg");
+
+  if (!otp || !newPassword) {
+    msg.textContent = "Please fill all fields";
+    msg.className = "mt-4 text-center text-sm text-red-500";
+    return;
+  }
+
+  msg.textContent = "Updating password...";
+  msg.className = "mt-4 text-center text-sm text-indigo-600 animate-pulse";
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "resetPassword", mobile, otp, newPassword })
+    });
+    const data = await res.json();
+
+    if (data.status === "success") {
+      msg.textContent = "Password updated! Redirecting to login...";
+      msg.className = "mt-4 text-center text-sm text-green-600";
+      setTimeout(() => showLogin(), 2000);
+    } else {
+      msg.textContent = data.message || "Invalid OTP";
+      msg.className = "mt-4 text-center text-sm text-red-500";
+    }
+  } catch (err) {
+    msg.textContent = "Error updating password";
+    msg.className = "mt-4 text-center text-sm text-red-500";
+  }
 }
