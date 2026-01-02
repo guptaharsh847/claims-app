@@ -680,7 +680,7 @@ async function updateStatus(claimId, status) {
         loadClaims();
       } catch (err) {
         console.error(err);
-        showToast("Failed to update status", "error");
+        alert("Failed to update status", "error");
       }
     },
     () => {
@@ -920,7 +920,7 @@ function renderUsers(page = 1) {
 /* -------- ADD USER -------- */
 async function addUser() {
   if (getDecodedRole() !== "ADMIN") {
-    showToast("Unauthorized action", "error");
+    alert("Unauthorized action", "error");
     return;
   }
 
@@ -941,10 +941,10 @@ async function addUser() {
 
   const result = await res.json();
   if (result.status === "success") {
-    showToast("User added successfully");
+    alert("User added successfully");
     setTimeout(() => (window.location.href = "manage-users.html"), 1000);
   } else {
-    showToast(result.message || "Error adding user", "error");
+    alert(result.message || "Error adding user", "error");
   }
 }
 
@@ -962,7 +962,7 @@ async function toggleUser(mobile, currentStatus) {
     }),
   });
 
-  showToast(`User ${status.toLowerCase()} successfully`);
+  alert(`User ${status.toLowerCase()} successfully`);
   loadUsers();
 }
 
@@ -981,7 +981,7 @@ async function changeRole(mobile, role) {
   if (localStorage.getItem("userMobile") === mobile) {
     setEncodedRole(role);
     if (role !== "ADMIN") {
-      showToast("Your role has been updated. Redirecting...");
+      alert("Your role has been updated. Redirecting...");
       setTimeout(() => {
         window.location.href = "index.html";
       }, 2000);
@@ -989,7 +989,7 @@ async function changeRole(mobile, role) {
     }
   }
 
-  showToast("Role updated successfully");
+  alert("Role updated successfully");
 }
 
 /* Auto-load users if on manage page */
@@ -1194,7 +1194,7 @@ function checkSession() {
         !window.location.href.includes("login.html") &&
         !window.location.href.includes("index.html")
       ) {
-        showToast("Session expired. Please login again.", "error");
+        alert("Session expired. Please login again.", "error");
         setTimeout(() => (window.location.href = "login.html"), 2000);
       }
     } else {
