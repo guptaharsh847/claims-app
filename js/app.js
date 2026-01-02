@@ -254,14 +254,18 @@ async function login() {
 
     const text = await res.text();
     const data = JSON.parse(text);
-
-    if (data.status === "success") {
+    if (data.status === "success" && data.userStatus === "ACTIVE") {
       msg.className = "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 py-2 px-4 rounded-lg";
       msg.textContent = "Success! Redirecting...";
       localStorage.setItem("role", data.role);
       setTimeout(() => {
         window.location.href = data.role === "ADMIN" ? "admin.html" : "claim.html";
       }, 800);
+    }else if(data.status === "success" && data.userStatus !== "ACTIVE"){
+       msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
+      msg.innerHTML = "Your account has been temporarily disabled.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact admin for more details</span>";
+   
+
     } else {
       msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
       msg.innerHTML = "Invalid credentials.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact administrator for credentials</span>";
@@ -391,28 +395,31 @@ function sortAdminClaims(field) {
 async function updateStatus(claimId, status) {
   if (!status) return;
 
-  if (!confirm(`Change status to "${status}"?`)) return;
+  showConfirm(`Change status to "${status}"?`, async () => {
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "updateStatus",
+          claimId,
+          status
+        })
+      });
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        action: "updateStatus",
-        claimId,
-        status
-      })
-    });
+      alert("Status updated successfully");
+      loadClaims();
 
-    alert("Status updated successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update status", "error");
+    }
+  }, () => {
+    // Revert selection on cancel
     loadClaims();
-
-  } catch (err) {
-    console.error(err);
-    alert("Failed to update status");
-  }
+  });
 }
 
 /* Auto-load claims on page open */
@@ -517,4 +524,223 @@ async function submitReset() {
     msg.textContent = "Error updating password";
     msg.className = "mt-4 text-center text-sm text-red-500";
   }
+}
+/* ======================================================
+   MANAGE USERS – ADMIN
+====================================================== */
+
+function openManageUsers() {
+  if (localStorage.getItem("role") === "ADMIN") {
+    window.location.href = "manage-users.html";
+  } else {
+    window.location.href = "login.html";
+  }
+}
+
+/* -------- LOAD USERS -------- */
+async function loadUsers() {
+  if (localStorage.getItem("role") !== "ADMIN") return;
+
+  const tbody = document.getElementById("users-table-body");
+  if (!tbody) return;
+
+  try {
+    const res = await fetch(`${API_URL}?action=getUsers`);
+    const users = await res.json();
+
+    if (!users || users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
+      return;
+    }
+
+    let html = '';
+    users.forEach(u => {
+      const statusClass = u.status === "ACTIVE" 
+        ? "bg-green-50 text-green-700 border border-green-100" 
+        : "bg-red-50 text-red-700 border border-red-100";
+
+      html += `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4 font-medium text-slate-900">${u.name}</td>
+          <td class="px-6 py-4 text-slate-600">${u.mobile}</td>
+          <td class="px-6 py-4 text-slate-600">${u.email}</td>
+          <td class="px-6 py-4">
+            <select onchange="changeRole('${u.mobile}', this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded focus:ring-indigo-500 focus:border-indigo-500 block p-1.5">
+              <option value="USER" ${u.role==="USER"?"selected":""}>USER</option>
+              <option value="ADMIN" ${u.role==="ADMIN"?"selected":""}>ADMIN</option>
+            </select>
+          </td>
+          <td class="px-6 py-4">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+              ${u.status}
+            </span>
+          </td>
+          <td class="px-6 py-4">
+            <button onclick="toggleUser('${u.mobile}', '${u.status}')" 
+              class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">
+              ${u.status==="ACTIVE"?"Disable":"Enable"}
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
+  }
+}
+
+/* -------- ADD USER -------- */
+async function addUser() {
+  if (localStorage.getItem("role") !== "ADMIN") {
+    alert("Unauthorized action", "error");
+    return;
+  }
+
+  const data = {
+    action: "addUser",
+    name: document.getElementById("u-name").value,
+    mobile: document.getElementById("u-mobile").value,
+    email: document.getElementById("u-email").value,
+    password: document.getElementById("u-password").value,
+    role: document.getElementById("u-role").value
+  };
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+  if (result.status === "success") {
+    alert("User added successfully");
+    setTimeout(() => window.location.href = "manage-users.html", 1000);
+  } else {
+    alert(result.message || "Error adding user", "error");
+  }
+}
+
+/* -------- ENABLE / DISABLE USER -------- */
+async function toggleUser(mobile, currentStatus) {
+  const status = currentStatus === "ACTIVE" ? "DISABLED" : "ACTIVE";
+
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "updateUserStatus",
+      mobile,
+      status
+    })
+  });
+
+  alert(`User ${status.toLowerCase()} successfully`);
+  loadUsers();
+}
+
+/* -------- CHANGE ROLE -------- */
+async function changeRole(mobile, role) {
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "changeUserRole",
+      mobile,
+      role
+    })
+  });
+
+  alert("Role updated successfully");
+}
+
+/* Auto-load users if on manage page */
+if (document.getElementById("users-table-body")) {
+  loadUsers();
+}
+
+/* ======================================================
+   UI HELPERS (Custom Alert & Confirm)
+====================================================== */
+
+window.alert = function(message, type = "success") {
+  const existing = document.getElementById("custom-alert");
+  if (existing) existing.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "custom-alert";
+  overlay.className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity opacity-0";
+  
+  const isError = type === "error";
+  const iconColor = isError ? "text-red-500 bg-red-50" : "text-green-500 bg-green-50";
+  const btnColor = isError ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700";
+  
+  // SVG Icons
+  const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
+  const errorIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
+
+  overlay.innerHTML = `
+    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 transform scale-90 transition-transform text-center">
+      <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full ${iconColor} mb-6">
+        ${isError ? errorIcon : checkIcon}
+      </div>
+      <h3 class="text-xl font-bold text-slate-800 mb-2">${isError ? "Error" : "Success"}</h3>
+      <p class="text-slate-600 mb-8 leading-relaxed">${message}</p>
+      <button onclick="document.getElementById('custom-alert').classList.add('opacity-0'); setTimeout(() => document.getElementById('custom-alert').remove(), 300);" 
+        class="w-full ${btnColor} text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-100">
+        Okay, Got it
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    overlay.classList.remove("opacity-0");
+    overlay.querySelector("div").classList.remove("scale-90");
+    overlay.querySelector("div").classList.add("scale-100");
+  });
+};
+
+function showConfirm(message, onConfirm, onCancel) {
+  const overlay = document.createElement("div");
+  overlay.className = "fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
+  
+  overlay.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
+      <h3 class="text-lg font-bold text-slate-800 mb-2">Confirm Action</h3>
+      <p class="text-slate-600 mb-6">${message}</p>
+      <div class="flex justify-end gap-3">
+        <button id="confirm-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition">Cancel</button>
+        <button id="confirm-yes" class="px-4 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg font-medium transition shadow-sm">Confirm</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => {
+    overlay.classList.remove("opacity-0");
+    overlay.querySelector("div").classList.remove("scale-95");
+  });
+
+  const close = () => {
+    overlay.classList.add("opacity-0");
+    overlay.querySelector("div").classList.add("scale-95");
+    setTimeout(() => overlay.remove(), 200);
+  };
+
+  overlay.querySelector("#confirm-cancel").onclick = () => {
+    close();
+    if (onCancel) onCancel();
+  };
+  
+  overlay.querySelector("#confirm-yes").onclick = () => {
+    close();
+    if (onConfirm) onConfirm();
+  };
 }

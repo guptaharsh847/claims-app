@@ -33,6 +33,10 @@
           <span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-2"></span>
           Admin Access
         </div>
+        <button onclick="openManageUsers()" class="bg-indigo-600 text-white px-4 py-2 rounded">
+          Manage Users
+        </button>
+        <div id="manage-users" class="hidden mt-6"></div>
         <button onclick="localStorage.removeItem('role'); window.location.href='index.html'" 
           class="bg-white text-slate-600 hover:text-red-600 px-4 py-2 rounded-lg shadow-sm border border-slate-200 hover:border-red-200 transition text-sm font-medium flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
