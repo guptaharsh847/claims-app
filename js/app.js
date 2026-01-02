@@ -28,6 +28,7 @@ const form = document.getElementById("claimForm");
 const fileInput = document.querySelector('input[name="receipt"]');
 const fileNameEl = document.getElementById("fileName");
 let currentClaims = [];
+let currentFilteredClaims = [];
 let currentSort = {
   field: null,
   direction: "asc",
@@ -130,7 +131,7 @@ async function searchClaim() {
     currentClaims.sort(
       (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
     );
-    renderClaims(currentClaims, 1);
+    applyUserFilter();
   } catch (err) {
     output.innerHTML = `<pre class="text-red-600">${err.message}</pre>`;
   }
@@ -138,8 +139,8 @@ async function searchClaim() {
 
 function renderClaims(claims, page = 1) {
   // Handle global state if called from pagination buttons
-  if (claims) currentClaims = claims;
-  else claims = currentClaims;
+  if (claims) currentFilteredClaims = claims;
+  else claims = currentFilteredClaims;
 
   const output = document.getElementById("output");
 
@@ -175,7 +176,7 @@ function renderClaims(claims, page = 1) {
     let statusClass = "bg-slate-100 text-slate-600";
     if (c.status === "Submitted")
       statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-    else if (c.status === "Pending")
+    else if (c.status === "Approved")
       statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
     else if (c.status === "Reimbursed")
       statusClass = "bg-green-50 text-green-700 border border-green-100";
@@ -184,13 +185,28 @@ function renderClaims(claims, page = 1) {
 
     html += `
       <tr class="hover:bg-slate-50 transition-colors">
-        <td class="px-6 py-4 font-medium text-slate-900">${c.claimId}</td>
+        <td class="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
+  ${c.claimId}
+  <button
+    onclick="copyClaimId('${c.claimId}')"
+    title="Copy Claim ID"
+    class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  </button>
+</td>
+
         <td class="px-6 py-4 text-slate-600">${c.type}</td>
         <td class="px-6 py-4 font-medium text-slate-900">₹${c.amount}</td>
         <td class="px-6 py-4">
-          <span class="px-3 py-1 rounded-full text-xs font-medium ${statusClass}">
-            ${c.status}
-          </span>
+          <span
+  title="${getStatusTooltip(c.status)}"
+  class="px-3 py-1 rounded-full text-xs font-medium cursor-help ${statusClass}"
+>
+  ${c.status}
+</span>
         </td>
         <td class="px-6 py-4">
           ${
@@ -206,7 +222,7 @@ function renderClaims(claims, page = 1) {
   ${
     c.status === "Reimbursed"
       ? "-"
-      : getSlaBadge(calculateDaysPending(c.timestamp, c.status))
+      : getSlaBadge(calculateDaysApproved(c.timestamp, c.status))
   }
 </td>
 
@@ -242,6 +258,17 @@ function renderClaims(claims, page = 1) {
 
   output.innerHTML = html;
 }
+
+function applyUserFilter() {
+  const status = document.getElementById("userStatusFilter").value;
+  let filtered = currentClaims;
+
+  if (status) {
+    filtered = currentClaims.filter((c) => c.status === status);
+  }
+  renderClaims(filtered, 1);
+}
+
 function sortClaims(field) {
   document.getElementById("dateArrow").textContent =
     currentSort.field === "date"
@@ -281,7 +308,28 @@ function sortClaims(field) {
   });
 
   currentClaims = sorted;
-  renderClaims(currentClaims, 1);
+  applyUserFilter();
+}
+
+function clearUserFilters() {
+  document.getElementById("userStatusFilter").value = "";
+  document.getElementById("searchValue").value = "";
+  
+  currentSort = { field: null, direction: "asc" };
+  document.getElementById("dateArrow").textContent = "";
+  document.getElementById("idArrow").textContent = "";
+
+  // Reset Data and View
+  currentClaims = [];
+  currentFilteredClaims = [];
+  document.getElementById("output").innerHTML = `
+    <div class="p-12 text-center text-slate-400">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <p>Enter your email or claim ID to view status</p>
+    </div>
+  `;
 }
 
 function getAdminClaims(status) {
@@ -439,7 +487,7 @@ function renderAdminClaims(claims, page = 1) {
     let statusClass = "bg-slate-100 text-slate-600";
     if (c.status === "Submitted")
       statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-    else if (c.status === "Pending")
+    else if (c.status === "Approved")
       statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
     else if (c.status === "Reimbursed")
       statusClass = "bg-green-50 text-green-700 border border-green-100";
@@ -448,7 +496,16 @@ function renderAdminClaims(claims, page = 1) {
 
     html += `
         <tr class="hover:bg-slate-50">
-          <td class="border p-2">${c.claimId}</td>
+          <td class="border p-2">
+            <div class="flex items-center gap-2">
+              ${c.claimId}
+              <button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          </td>
           <td class="border p-2">${c.email}</td>
           <td class="border p-2">₹${c.amount}</td>
           <td class="border p-2 font-medium">
@@ -463,7 +520,7 @@ function renderAdminClaims(claims, page = 1) {
             >
               <option value="">Select</option>
               <option value="Submitted">Submitted</option>
-              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
               <option value="Declined">Declined</option>
               <option value="Reimbursed">Reimbursed</option>
             </select>
@@ -473,7 +530,7 @@ function renderAdminClaims(claims, page = 1) {
     c.status === "Reimbursed"
       ? "-"
       : getSlaBadge(
-          calculateDaysPending(c.timestamp, c.status)
+          calculateDaysApproved(c.timestamp, c.status)
         )
   }
 </td>
@@ -536,6 +593,14 @@ function sortAdminClaims(field) {
   });
 
   renderAdminClaims(currentAdminClaims, 1);
+}
+
+function clearAdminFilters() {
+  document.getElementById("statusFilter").value = "";
+  currentAdminSort = { field: null, direction: "asc" };
+  const arrow = document.getElementById("adminIdArrow");
+  if (arrow) arrow.textContent = "";
+  loadClaims();
 }
 
 async function updateStatus(claimId, status) {
@@ -985,13 +1050,27 @@ function getSlaBadge(days) {
   return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">${days} days</span>`;
 }
 
-function calculateDaysPending(timestamp, status) {
+function calculateDaysApproved(timestamp, status) {
   if (!timestamp) return 0;
   if (status === "Reimbursed") return 0;
 
   const now = new Date();
   const created = new Date(timestamp);
   return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+}
+
+function getStatusTooltip(status) {
+  switch (status) {
+    case "Submitted": return "Waiting for admin review";
+    case "Approved": return "Approved by Admin Payment Pending";
+    case "Declined": return "Rejected by admin";
+    case "Reimbursed": return "Payment processed";
+    default: return "";
+  }
+}
+function copyClaimId(id) {
+  navigator.clipboard.writeText(id);
+  alert("Claim ID copied: " + id);
 }
 /* ======================================================
    SESSION CHECK (30 Min Timeout)

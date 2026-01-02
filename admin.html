@@ -75,7 +75,7 @@
             class="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-2.5 pl-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer shadow-sm text-sm">
             <option value="">All Statuses</option>
             <option value="Submitted">Submitted</option>
-            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
             <option value="Declined">Declined</option>
             <option value="Reimbursed">Reimbursed</option>
           </select>
@@ -85,6 +85,10 @@
             </svg>
           </div>
           </div>
+
+          <button onclick="clearAdminFilters()" class="bg-white border border-slate-300 text-slate-600 px-4 py-2.5 rounded-lg hover:bg-slate-50 hover:text-red-600 transition text-sm font-medium shadow-sm whitespace-nowrap">
+            Clear Filters
+          </button>
         </div>
       </div>
 
