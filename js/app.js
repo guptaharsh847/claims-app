@@ -228,6 +228,9 @@ function renderClaims(claims, page = 1) {
 >
   ${c.status}
 </span>
+<span class="text-xs text-slate-400 mt-1 ml-1">
+    ${timeAgo(c.timestamp)}
+  </span>
         </td>
         <td class="px-6 py-4">
           ${
@@ -278,6 +281,8 @@ function renderClaims(claims, page = 1) {
   }
 
   output.innerHTML = html;
+  output.scrollIntoView({ behavior: "smooth", block: "start" });
+
 }
 
 function applyUserFilter() {
@@ -670,11 +675,12 @@ async function updateStatus(claimId, status) {
           }),
         });
 
-        alert("Status updated successfully");
+        showToast("Status updated successfully");
+    
         loadClaims();
       } catch (err) {
         console.error(err);
-        alert("Failed to update status", "error");
+        showToast("Failed to update status", "error");
       }
     },
     () => {
@@ -914,7 +920,7 @@ function renderUsers(page = 1) {
 /* -------- ADD USER -------- */
 async function addUser() {
   if (getDecodedRole() !== "ADMIN") {
-    alert("Unauthorized action", "error");
+    showToast("Unauthorized action", "error");
     return;
   }
 
@@ -935,10 +941,10 @@ async function addUser() {
 
   const result = await res.json();
   if (result.status === "success") {
-    alert("User added successfully");
+    showToast("User added successfully");
     setTimeout(() => (window.location.href = "manage-users.html"), 1000);
   } else {
-    alert(result.message || "Error adding user", "error");
+    showToast(result.message || "Error adding user", "error");
   }
 }
 
@@ -956,7 +962,7 @@ async function toggleUser(mobile, currentStatus) {
     }),
   });
 
-  alert(`User ${status.toLowerCase()} successfully`);
+  showToast(`User ${status.toLowerCase()} successfully`);
   loadUsers();
 }
 
@@ -975,7 +981,7 @@ async function changeRole(mobile, role) {
   if (localStorage.getItem("userMobile") === mobile) {
     setEncodedRole(role);
     if (role !== "ADMIN") {
-      alert("Your role has been updated. Redirecting...");
+      showToast("Your role has been updated. Redirecting...");
       setTimeout(() => {
         window.location.href = "index.html";
       }, 2000);
@@ -983,7 +989,7 @@ async function changeRole(mobile, role) {
     }
   }
 
-  alert("Role updated successfully");
+  showToast("Role updated successfully");
 }
 
 /* Auto-load users if on manage page */
@@ -1118,7 +1124,58 @@ function getStatusTooltip(status) {
 }
 function copyClaimId(id) {
   navigator.clipboard.writeText(id);
-  alert("Claim ID copied: " + id);
+  showToast("Claim ID copied: " + id);
+}
+function timeAgo(date) {
+  if (!date) return "";
+
+  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+  const intervals = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 }
+  ];
+
+  for (const i of intervals) {
+    const count = Math.floor(seconds / i.seconds);
+    if (count >= 1) {
+      return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
+    }
+  }
+  return "just now";
+}
+function showToast(message, type = "success") {
+  const toast = document.createElement("div");
+
+  const color =
+    type === "error"
+      ? "bg-red-600"
+      : type === "warning"
+      ? "bg-orange-500"
+      : "bg-green-600";
+
+  toast.className = `
+    fixed bottom-6 left-1/2 -translate-x-1/2 z-[999]
+    ${color} text-white
+    px-6 py-3 rounded-xl shadow-xl
+    opacity-0 translate-y-4
+    transition-all duration-300
+    text-sm font-medium
+  `;
+
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.remove("opacity-0", "translate-y-4");
+  });
+
+  setTimeout(() => {
+    toast.classList.add("opacity-0", "translate-y-4");
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
 }
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
@@ -1137,7 +1194,7 @@ function checkSession() {
         !window.location.href.includes("login.html") &&
         !window.location.href.includes("index.html")
       ) {
-        alert("Session expired. Please login again.", "error");
+        showToast("Session expired. Please login again.", "error");
         setTimeout(() => (window.location.href = "login.html"), 2000);
       }
     } else {
