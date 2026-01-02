@@ -145,8 +145,29 @@ function renderClaims(claims, page = 1) {
   const output = document.getElementById("output");
 
   if (!claims || claims.length === 0) {
-    output.innerHTML =
-      '<div class="p-8 text-center text-slate-500">No claims found</div>';
+    output.innerHTML = `
+  <div class="flex flex-col items-center justify-center py-8 text-center">
+    <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center mb-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </div>
+
+    <h3 class="text-base font-semibold text-slate-800 mb-1">
+      No claims found
+    </h3>
+
+    <p class="text-slate-500 mb-4 max-w-xs text-sm">
+      Please verify your Email or Claim ID, or raise a new claim.
+    </p>
+
+    <a href="claim.html"
+      class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition shadow">
+      + Raise a Claim
+    </a>
+  </div>
+`;
+
     return;
   }
 
@@ -323,11 +344,16 @@ function clearUserFilters() {
   currentClaims = [];
   currentFilteredClaims = [];
   document.getElementById("output").innerHTML = `
-    <div class="p-12 text-center text-slate-400">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-      <p>Enter your email or claim ID to view status</p>
+    <div class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-slate-800 mb-2">Ready to Search</h3>
+      <p class="text-slate-500 mb-6 max-w-sm">
+        Enter your email address or claim ID above to view the status of your reimbursement requests.
+      </p>
     </div>
   `;
 }
@@ -457,7 +483,29 @@ function renderAdminClaims(claims, page = 1) {
 
   if (!claims || claims.length === 0) {
     claimsDiv.innerHTML =
-      '<div class="p-8 text-center text-slate-500">No claims found.</div>';
+      `
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6" />
+      </svg>
+    </div>
+
+    <h3 class="text-lg font-semibold text-slate-800 mb-2">
+      No claims found
+    </h3>
+
+    <p class="text-slate-500 mb-6 max-w-sm">
+      You haven’t submitted any claims yet. Start by raising a new claim.
+    </p>
+
+    <a href="claim.html"
+      class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-lg font-medium transition shadow">
+      + Raise a Claim
+    </a>
+  </div>
+`;
     if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }

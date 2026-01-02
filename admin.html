@@ -42,7 +42,7 @@
         </button>
         <div id="manage-users" class="hidden mt-6"></div>
         <button onclick="localStorage.removeItem('role'); localStorage.removeItem('userMobile'); localStorage.removeItem('loginTime'); window.location.href='index.html'" 
-          class="bg-white text-slate-600 hover:text-red-600 px-4 py-2 rounded-lg shadow-sm border border-slate-200 hover:border-red-200 transition text-sm font-medium flex items-center">
+          class="bg-white text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg shadow-sm border border-red-200 transition text-sm font-medium flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
           </svg>
@@ -59,11 +59,10 @@
         <div class="flex items-center gap-2 text-slate-700">
          
           <!-- <span class="font-semibold">Filter Claims</span> -->
-            <button onclick="sortAdminClaims('claimId')" 
-            class="bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-50 transition text-sm font-medium shadow-sm flex items-center justify-center whitespace-nowrap">
-           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>  Sort by ID <span id="adminIdArrow" class="ml-2 text-slate-400"></span>
+          <button onclick="sortAdminClaims('claimId')" class="bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-50 transition text-sm font-medium shadow-sm flex items-center justify-center whitespace-nowrap">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+            </svg> Sort by ID <span id="adminIdArrow" class="ml-2 text-slate-400"></span>
           </button>
         </div>
         
@@ -86,7 +85,7 @@
           </div>
           </div>
 
-          <button onclick="clearAdminFilters()" class="bg-white border border-slate-300 text-slate-600 px-4 py-2.5 rounded-lg hover:bg-slate-50 hover:text-red-600 transition text-sm font-medium shadow-sm whitespace-nowrap">
+          <button onclick="clearAdminFilters()" class="bg-white border border-red-200 text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-50 transition text-sm font-medium shadow-sm whitespace-nowrap">
             Clear Filters
           </button>
         </div>
