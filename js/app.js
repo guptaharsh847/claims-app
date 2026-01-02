@@ -5,8 +5,8 @@ const API_URL =
 
 /* Security / Role Helpers */
 const ROLE_HASH = {
-  ADMIN: "X9fK2pL5mQ8jR3t", 
-  USER: "B2vN9kM4lP7oJ5h"
+  ADMIN: "X9fK2pL5mQ8jR3t",
+  USER: "B2vN9kM4lP7oJ5h",
 };
 
 function getDecodedRole() {
@@ -30,7 +30,7 @@ const fileNameEl = document.getElementById("fileName");
 let currentClaims = [];
 let currentSort = {
   field: null,
-  direction: "asc"
+  direction: "asc",
 };
 
 /* Pagination Globals */
@@ -49,53 +49,51 @@ if (form) {
     });
   }
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const result = document.getElementById("result");
-  result.textContent = "Submitting...";
+    const result = document.getElementById("result");
+    result.textContent = "Submitting...";
 
-  // Convert form to plain object
-  const formData = new FormData(form);
-  const payload = Object.fromEntries(formData.entries());
+    // Convert form to plain object
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
 
-  // Generate claim ID on frontend (safe & reliable)
+    // Generate claim ID on frontend (safe & reliable)
 
-  // Handle file (Base64)
-  const file = fileInput.files[0];
-  if (file) {
-    const reader = new FileReader();
-    const base64 = await new Promise(resolve => {
-      reader.onload = () => resolve(reader.result.split(",")[1]);
-      reader.readAsDataURL(file);
-    });
+    // Handle file (Base64)
+    const file = fileInput.files[0];
+    if (file) {
+      const reader = new FileReader();
+      const base64 = await new Promise((resolve) => {
+        reader.onload = () => resolve(reader.result.split(",")[1]);
+        reader.readAsDataURL(file);
+      });
 
-    payload.fileData = base64;
-    payload.fileName = file.name;
-    payload.fileType = file.type;
-  }
+      payload.fileData = base64;
+      payload.fileName = file.name;
+      payload.fileType = file.type;
+    }
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8" // avoid preflight
-      },
-      body: JSON.stringify(payload)
-    });
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8", // avoid preflight
+        },
+        body: JSON.stringify(payload),
+      });
 
-    // Do NOT depend on response (CORS-safe)
-    result.textContent = `Claim submitted successfully!`;
-    form.reset();
-    if (fileNameEl) fileNameEl.textContent = "";
-
-  } catch (err) {
-    console.error(err);
-    // Backend still runs even if browser throws
-    result.textContent = `Claim submitted successfully!`;
-  }
-});
-
+      // Do NOT depend on response (CORS-safe)
+      result.textContent = `Claim submitted successfully!`;
+      form.reset();
+      if (fileNameEl) fileNameEl.textContent = "";
+    } catch (err) {
+      console.error(err);
+      // Backend still runs even if browser throws
+      result.textContent = `Claim submitted successfully!`;
+    }
+  });
 }
 
 /* ======================================================
@@ -119,25 +117,22 @@ async function searchClaim() {
   `;
 
   try {
-    const res = await fetch(
-      `${API_URL}?search=${encodeURIComponent(value)}`
-    );
+    const res = await fetch(`${API_URL}?search=${encodeURIComponent(value)}`);
     const data = await res.json();
 
     if (data.error) {
-      output.innerHTML =
-        `<div class="p-8 text-center text-slate-500">${data.error}</div>`;
+      output.innerHTML = `<div class="p-8 text-center text-slate-500">${data.error}</div>`;
       return;
     }
 
     currentClaims = data.claims;
     // Sort by latest (descending timestamp)
-    currentClaims.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    currentClaims.sort(
+      (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+    );
     renderClaims(currentClaims, 1);
-
   } catch (err) {
-     output.innerHTML =
-    `<pre class="text-red-600">${err.message}</pre>`;
+    output.innerHTML = `<pre class="text-red-600">${err.message}</pre>`;
   }
 }
 
@@ -149,7 +144,8 @@ function renderClaims(claims, page = 1) {
   const output = document.getElementById("output");
 
   if (!claims || claims.length === 0) {
-    output.innerHTML = '<div class="p-8 text-center text-slate-500">No claims found</div>';
+    output.innerHTML =
+      '<div class="p-8 text-center text-slate-500">No claims found</div>';
     return;
   }
 
@@ -167,18 +163,24 @@ function renderClaims(claims, page = 1) {
           <th class="px-6 py-4 font-semibold text-slate-700">Amount</th>
           <th class="px-6 py-4 font-semibold text-slate-700">Status</th>
           <th class="px-6 py-4 font-semibold text-slate-700">Receipt</th>
+          <th class="border p-2">SLA</th>
+
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
   `;
 
-  paginatedClaims.forEach(c => {
+  paginatedClaims.forEach((c) => {
     // Status Badge Logic
     let statusClass = "bg-slate-100 text-slate-600";
-    if (c.status === "Submitted") statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-    else if (c.status === "Pending") statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
-    else if (c.status === "Reimbursed") statusClass = "bg-green-50 text-green-700 border border-green-100";
-    else if (c.status === "Declined") statusClass = "bg-red-50 text-red-700 border border-red-100";
+    if (c.status === "Submitted")
+      statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
+    else if (c.status === "Pending")
+      statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
+    else if (c.status === "Reimbursed")
+      statusClass = "bg-green-50 text-green-700 border border-green-100";
+    else if (c.status === "Declined")
+      statusClass = "bg-red-50 text-red-700 border border-red-100";
 
     html += `
       <tr class="hover:bg-slate-50 transition-colors">
@@ -191,13 +193,23 @@ function renderClaims(claims, page = 1) {
           </span>
         </td>
         <td class="px-6 py-4">
-          ${c.receiptUrl 
-            ? `<a href="${c.receiptUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1">
+          ${
+            c.receiptUrl
+              ? `<a href="${c.receiptUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1">
                  View
                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-               </a>` 
-            : `<span class="text-slate-400 italic">No receipt</span>`}
+               </a>`
+              : `<span class="text-slate-400 italic">No receipt</span>`
+          }
         </td>
+        <td class="border p-2 text-center">
+  ${
+    c.status === "Reimbursed"
+      ? "-"
+      : getSlaBadge(calculateDaysPending(c.timestamp, c.status))
+  }
+</td>
+
       </tr>
     `;
   });
@@ -208,10 +220,21 @@ function renderClaims(claims, page = 1) {
   if (totalPages > 1) {
     html += `
       <div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
-        <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+        <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(
+      end,
+      claims.length
+    )} of ${claims.length} results</span>
         <div class="flex gap-2">
-          <button onclick="renderClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-          <button onclick="renderClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+          <button onclick="renderClaims(null, ${page - 1})" ${
+      page === 1
+        ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+        : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+    } >Previous</button>
+          <button onclick="renderClaims(null, ${page + 1})" ${
+      page === totalPages
+        ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+        : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+    } >Next</button>
         </div>
       </div>
     `;
@@ -220,11 +243,19 @@ function renderClaims(claims, page = 1) {
   output.innerHTML = html;
 }
 function sortClaims(field) {
-      document.getElementById("dateArrow").textContent =
-  currentSort.field === "date" ? (currentSort.direction === "asc" ? "↑" : "↓") : "";
+  document.getElementById("dateArrow").textContent =
+    currentSort.field === "date"
+      ? currentSort.direction === "asc"
+        ? "↑"
+        : "↓"
+      : "";
 
-document.getElementById("idArrow").textContent =
-  currentSort.field === "claimId" ? (currentSort.direction === "asc" ? "↑" : "↓") : "";
+  document.getElementById("idArrow").textContent =
+    currentSort.field === "claimId"
+      ? currentSort.direction === "asc"
+        ? "↑"
+        : "↓"
+      : "";
   if (!currentClaims || currentClaims.length === 0) return;
 
   // Toggle direction if same field, else reset to asc
@@ -263,7 +294,9 @@ function getAdminClaims(status) {
       result.push({
         claimId: rows[i][0],
         email: rows[i][2],
-        status: rows[i][10]
+        amount: rows[i][6],
+        timestamp: rows[i][11],
+        status: rows[i][10],
       });
     }
   }
@@ -287,7 +320,8 @@ async function login() {
   const password = document.getElementById("password").value;
   const msg = document.getElementById("msg");
 
-  msg.className = "mt-4 text-center text-sm font-medium text-indigo-600 bg-indigo-50 py-2 px-4 rounded-lg animate-pulse";
+  msg.className =
+    "mt-4 text-center text-sm font-medium text-indigo-600 bg-indigo-50 py-2 px-4 rounded-lg animate-pulse";
   msg.textContent = "Verifying credentials...";
 
   try {
@@ -297,33 +331,37 @@ async function login() {
       body: JSON.stringify({
         action: "login",
         mobile,
-        password
-      })
+        password,
+      }),
     });
 
     const text = await res.text();
     const data = JSON.parse(text);
     if (data.status === "success" && data.userStatus === "ACTIVE") {
-      msg.className = "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 py-2 px-4 rounded-lg";
+      msg.className =
+        "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 py-2 px-4 rounded-lg";
       msg.textContent = "Success! Redirecting...";
       setEncodedRole(data.role);
       localStorage.setItem("userMobile", mobile);
       localStorage.setItem("loginTime", Date.now());
       setTimeout(() => {
-        window.location.href = data.role === "ADMIN" ? "admin.html" : "claim.html";
+        window.location.href =
+          data.role === "ADMIN" ? "admin.html" : "claim.html";
       }, 800);
-    }else if(data.status === "success" && data.userStatus !== "ACTIVE"){
-       msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
-      msg.innerHTML = "Your account has been temporarily disabled.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact admin for more details</span>";
-   
-
+    } else if (data.status === "success" && data.userStatus !== "ACTIVE") {
+      msg.className =
+        "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
+      msg.innerHTML =
+        "Your account has been temporarily disabled.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact admin for more details</span>";
     } else {
-      msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
-      msg.innerHTML = "Invalid credentials.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact administrator for credentials</span>";
+      msg.className =
+        "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
+      msg.innerHTML =
+        "Invalid credentials.<br><span class='text-xs text-red-500 mt-1 block font-normal'>Contact administrator for credentials</span>";
     }
-
   } catch {
-    msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
+    msg.className =
+      "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
     msg.textContent = "Connection failed. Please try again.";
   }
 }
@@ -333,7 +371,7 @@ async function login() {
 ====================================================== */
 
 let currentAdminClaims = [];
-let currentAdminSort = { field: null, direction: 'asc' };
+let currentAdminSort = { field: null, direction: "asc" };
 
 async function loadClaims() {
   const status = document.getElementById("statusFilter").value;
@@ -355,10 +393,10 @@ async function loadClaims() {
 
     currentAdminClaims = data || [];
     renderAdminClaims(currentAdminClaims, 1);
-
   } catch (err) {
     console.error(err);
-    claimsDiv.innerHTML = '<div class="p-8 text-center text-red-500">Error loading claims.</div>';
+    claimsDiv.innerHTML =
+      '<div class="p-8 text-center text-red-500">Error loading claims.</div>';
   }
 }
 
@@ -370,7 +408,8 @@ function renderAdminClaims(claims, page = 1) {
   const paginationDiv = document.getElementById("admin-pagination");
 
   if (!claims || claims.length === 0) {
-    claimsDiv.innerHTML = '<div class="p-8 text-center text-slate-500">No claims found.</div>';
+    claimsDiv.innerHTML =
+      '<div class="p-8 text-center text-slate-500">No claims found.</div>';
     if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
@@ -389,19 +428,25 @@ function renderAdminClaims(claims, page = 1) {
             <th class="border p-2">Amount</th>
             <th class="border p-2">Current Status</th>
             <th class="border p-2">Update Status</th>
+            <th class="border p-2">SLA</th>
+
           </tr>
         </thead>
         <tbody>
     `;
 
-  paginatedClaims.forEach(c => {
-      let statusClass = "bg-slate-100 text-slate-600";
-      if (c.status === "Submitted") statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-      else if (c.status === "Pending") statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
-      else if (c.status === "Reimbursed") statusClass = "bg-green-50 text-green-700 border border-green-100";
-      else if (c.status === "Declined") statusClass = "bg-red-50 text-red-700 border border-red-100";
+  paginatedClaims.forEach((c) => {
+    let statusClass = "bg-slate-100 text-slate-600";
+    if (c.status === "Submitted")
+      statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
+    else if (c.status === "Pending")
+      statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
+    else if (c.status === "Reimbursed")
+      statusClass = "bg-green-50 text-green-700 border border-green-100";
+    else if (c.status === "Declined")
+      statusClass = "bg-red-50 text-red-700 border border-red-100";
 
-      html += `
+    html += `
         <tr class="hover:bg-slate-50">
           <td class="border p-2">${c.claimId}</td>
           <td class="border p-2">${c.email}</td>
@@ -423,28 +468,50 @@ function renderAdminClaims(claims, page = 1) {
               <option value="Reimbursed">Reimbursed</option>
             </select>
           </td>
+          <td class="border p-2 text-center">
+  ${
+    c.status === "Reimbursed"
+      ? "-"
+      : getSlaBadge(
+          calculateDaysPending(c.timestamp, c.status)
+        )
+  }
+</td>
+
         </tr>
       `;
-    });
+  });
 
-    html += "</tbody></table>";
-    claimsDiv.innerHTML = html;
+  html += "</tbody></table>";
+  claimsDiv.innerHTML = html;
 
-    if (paginationDiv) {
-      if (totalPages > 1) {
-        paginationDiv.innerHTML = `
+  if (paginationDiv) {
+    if (totalPages > 1) {
+      paginationDiv.innerHTML = `
           <div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
-            <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+            <span class="text-sm text-slate-500">Showing ${
+              start + 1
+            } to ${Math.min(end, claims.length)} of ${
+        claims.length
+      } results</span>
             <div class="flex gap-2">
-              <button onclick="renderAdminClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-              <button onclick="renderAdminClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+              <button onclick="renderAdminClaims(null, ${page - 1})" ${
+        page === 1
+          ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+          : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+      } >Previous</button>
+              <button onclick="renderAdminClaims(null, ${page + 1})" ${
+        page === totalPages
+          ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+          : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+      } >Next</button>
             </div>
           </div>
         `;
-      } else {
-        paginationDiv.innerHTML = "";
-      }
+    } else {
+      paginationDiv.innerHTML = "";
     }
+  }
 }
 
 function sortAdminClaims(field) {
@@ -452,17 +519,19 @@ function sortAdminClaims(field) {
   if (!currentAdminClaims.length) return;
 
   if (currentAdminSort.field === field) {
-    currentAdminSort.direction = currentAdminSort.direction === "asc" ? "desc" : "asc";
+    currentAdminSort.direction =
+      currentAdminSort.direction === "asc" ? "desc" : "asc";
   } else {
     currentAdminSort.field = field;
     currentAdminSort.direction = "asc";
   }
 
-  if (arrow) arrow.textContent = currentAdminSort.direction === "asc" ? "↑" : "↓";
+  if (arrow)
+    arrow.textContent = currentAdminSort.direction === "asc" ? "↑" : "↓";
   const dir = currentAdminSort.direction === "asc" ? 1 : -1;
 
   currentAdminClaims.sort((a, b) => {
-    if (field === 'claimId') return dir * a.claimId.localeCompare(b.claimId);
+    if (field === "claimId") return dir * a.claimId.localeCompare(b.claimId);
     return 0;
   });
 
@@ -472,31 +541,34 @@ function sortAdminClaims(field) {
 async function updateStatus(claimId, status) {
   if (!status) return;
 
-  showConfirm(`Change status to "${status}"?`, async () => {
-    try {
-      await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify({
-          action: "updateStatus",
-          claimId,
-          status
-        })
-      });
+  showConfirm(
+    `Change status to "${status}"?`,
+    async () => {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+          },
+          body: JSON.stringify({
+            action: "updateStatus",
+            claimId,
+            status,
+          }),
+        });
 
-      alert("Status updated successfully");
+        alert("Status updated successfully");
+        loadClaims();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update status", "error");
+      }
+    },
+    () => {
+      // Revert selection on cancel
       loadClaims();
-
-    } catch (err) {
-      console.error(err);
-      alert("Failed to update status", "error");
     }
-  }, () => {
-    // Revert selection on cancel
-    loadClaims();
-  });
+  );
 }
 
 /* Auto-load claims on page open */
@@ -547,7 +619,7 @@ async function requestOtp() {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "sendOtp", mobile })
+      body: JSON.stringify({ action: "sendOtp", mobile }),
     });
     const data = await res.json();
 
@@ -585,7 +657,12 @@ async function submitReset() {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "resetPassword", mobile, otp, newPassword })
+      body: JSON.stringify({
+        action: "resetPassword",
+        mobile,
+        otp,
+        newPassword,
+      }),
     });
     const data = await res.json();
 
@@ -624,23 +701,24 @@ async function loadUsers() {
   try {
     const res = await fetch(`${API_URL}?action=getUsers`);
     const users = await res.json();
-    
+
     currentUsers = users || [];
     renderUsers(1);
-
   } catch (err) {
     console.error(err);
-    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
   }
 }
 
 function renderUsers(page = 1) {
   const tbody = document.getElementById("users-table-body");
   const paginationDiv = document.getElementById("users-pagination");
-  
+
   if (!currentUsers || currentUsers.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
-    if(paginationDiv) paginationDiv.innerHTML = '';
+    tbody.innerHTML =
+      '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
+    if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
 
@@ -649,21 +727,28 @@ function renderUsers(page = 1) {
   const paginatedUsers = currentUsers.slice(start, end);
   const totalPages = Math.ceil(currentUsers.length / USERS_PER_PAGE);
 
-  let html = '';
-  paginatedUsers.forEach(u => {
-      const statusClass = u.status === "ACTIVE" 
-        ? "bg-green-50 text-green-700 border border-green-100" 
+  let html = "";
+  paginatedUsers.forEach((u) => {
+    const statusClass =
+      u.status === "ACTIVE"
+        ? "bg-green-50 text-green-700 border border-green-100"
         : "bg-red-50 text-red-700 border border-red-100";
 
-      html += `
+    html += `
         <tr class="hover:bg-slate-50 transition-colors">
           <td class="px-6 py-4 font-medium text-slate-900">${u.name}</td>
           <td class="px-6 py-4 text-slate-600">${u.mobile}</td>
           <td class="px-6 py-4 text-slate-600">${u.email}</td>
           <td class="px-6 py-4">
-            <select onchange="changeRole('${u.mobile}', this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded focus:ring-indigo-500 focus:border-indigo-500 block p-1.5">
-              <option value="USER" ${u.role==="USER"?"selected":""}>USER</option>
-              <option value="ADMIN" ${u.role==="ADMIN"?"selected":""}>ADMIN</option>
+            <select onchange="changeRole('${
+              u.mobile
+            }', this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded focus:ring-indigo-500 focus:border-indigo-500 block p-1.5">
+              <option value="USER" ${
+                u.role === "USER" ? "selected" : ""
+              }>USER</option>
+              <option value="ADMIN" ${
+                u.role === "ADMIN" ? "selected" : ""
+              }>ADMIN</option>
             </select>
           </td>
           <td class="px-6 py-4">
@@ -674,12 +759,12 @@ function renderUsers(page = 1) {
           <td class="px-6 py-4">
             <button onclick="toggleUser('${u.mobile}', '${u.status}')" 
               class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">
-              ${u.status==="ACTIVE"?"Disable":"Enable"}
+              ${u.status === "ACTIVE" ? "Disable" : "Enable"}
             </button>
           </td>
         </tr>
       `;
-    });
+  });
 
   tbody.innerHTML = html;
 
@@ -688,15 +773,27 @@ function renderUsers(page = 1) {
     if (totalPages > 1) {
       paginationDiv.innerHTML = `
         <div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100">
-          <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, currentUsers.length)} of ${currentUsers.length} users</span>
+          <span class="text-sm text-slate-500">Showing ${
+            start + 1
+          } to ${Math.min(end, currentUsers.length)} of ${
+        currentUsers.length
+      } users</span>
           <div class="flex gap-2">
-            <button onclick="renderUsers(${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-            <button onclick="renderUsers(${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+            <button onclick="renderUsers(${page - 1})" ${
+        page === 1
+          ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+          : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+      } >Previous</button>
+            <button onclick="renderUsers(${page + 1})" ${
+        page === totalPages
+          ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"'
+          : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'
+      } >Next</button>
           </div>
         </div>
       `;
     } else {
-      paginationDiv.innerHTML = '';
+      paginationDiv.innerHTML = "";
     }
   }
 }
@@ -714,19 +811,19 @@ async function addUser() {
     mobile: document.getElementById("u-mobile").value,
     email: document.getElementById("u-email").value,
     password: document.getElementById("u-password").value,
-    role: document.getElementById("u-role").value
+    role: document.getElementById("u-role").value,
   };
 
   const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 
   const result = await res.json();
   if (result.status === "success") {
     alert("User added successfully");
-    setTimeout(() => window.location.href = "manage-users.html", 1000);
+    setTimeout(() => (window.location.href = "manage-users.html"), 1000);
   } else {
     alert(result.message || "Error adding user", "error");
   }
@@ -742,8 +839,8 @@ async function toggleUser(mobile, currentStatus) {
     body: JSON.stringify({
       action: "updateUserStatus",
       mobile,
-      status
-    })
+      status,
+    }),
   });
 
   alert(`User ${status.toLowerCase()} successfully`);
@@ -758,8 +855,8 @@ async function changeRole(mobile, role) {
     body: JSON.stringify({
       action: "changeUserRole",
       mobile,
-      role
-    })
+      role,
+    }),
   });
 
   if (localStorage.getItem("userMobile") === mobile) {
@@ -785,18 +882,23 @@ if (document.getElementById("users-table-body")) {
    UI HELPERS (Custom Alert & Confirm)
 ====================================================== */
 
-window.alert = function(message, type = "success") {
+window.alert = function (message, type = "success") {
   const existing = document.getElementById("custom-alert");
   if (existing) existing.remove();
 
   const overlay = document.createElement("div");
   overlay.id = "custom-alert";
-  overlay.className = "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity opacity-0";
-  
+  overlay.className =
+    "fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity opacity-0";
+
   const isError = type === "error";
-  const iconColor = isError ? "text-red-500 bg-red-50" : "text-green-500 bg-green-50";
-  const btnColor = isError ? "bg-red-600 hover:bg-red-700" : "bg-indigo-600 hover:bg-indigo-700";
-  
+  const iconColor = isError
+    ? "text-red-500 bg-red-50"
+    : "text-green-500 bg-green-50";
+  const btnColor = isError
+    ? "bg-red-600 hover:bg-red-700"
+    : "bg-indigo-600 hover:bg-indigo-700";
+
   // SVG Icons
   const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`;
   const errorIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
@@ -806,7 +908,9 @@ window.alert = function(message, type = "success") {
       <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full ${iconColor} mb-6">
         ${isError ? errorIcon : checkIcon}
       </div>
-      <h3 class="text-xl font-bold text-slate-800 mb-2">${isError ? "Error" : "Success"}</h3>
+      <h3 class="text-xl font-bold text-slate-800 mb-2">${
+        isError ? "Error" : "Success"
+      }</h3>
       <p class="text-slate-600 mb-8 leading-relaxed">${message}</p>
       <button onclick="document.getElementById('custom-alert').classList.add('opacity-0'); setTimeout(() => document.getElementById('custom-alert').remove(), 300);" 
         class="w-full ${btnColor} text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-100">
@@ -827,8 +931,9 @@ window.alert = function(message, type = "success") {
 
 function showConfirm(message, onConfirm, onCancel) {
   const overlay = document.createElement("div");
-  overlay.className = "fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
-  
+  overlay.className =
+    "fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
+
   overlay.innerHTML = `
     <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 transform scale-95 transition-transform">
       <h3 class="text-lg font-bold text-slate-800 mb-2">Confirm Action</h3>
@@ -858,13 +963,36 @@ function showConfirm(message, onConfirm, onCancel) {
     close();
     if (onCancel) onCancel();
   };
-  
+
   overlay.querySelector("#confirm-yes").onclick = () => {
     close();
     if (onConfirm) onConfirm();
   };
 }
+/* ======================================================
+   SLA CHECK 
+====================================================== */
+function getSlaBadge(days) {
+  if (days === 0) {
+    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Today</span>`;
+  }
+  if (days <= 5) {
+    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">${days} days</span>`;
+  }
+  if (days <= 10) {
+    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">${days} days</span>`;
+  }
+  return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">${days} days</span>`;
+}
 
+function calculateDaysPending(timestamp, status) {
+  if (!timestamp) return 0;
+  if (status === "Reimbursed") return 0;
+
+  const now = new Date();
+  const created = new Date(timestamp);
+  return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+}
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
 ====================================================== */
@@ -878,9 +1006,12 @@ function checkSession() {
 
     if (now - parseInt(loginTime) > limit) {
       localStorage.clear();
-      if (!window.location.href.includes("login.html") && !window.location.href.includes("index.html")) {
+      if (
+        !window.location.href.includes("login.html") &&
+        !window.location.href.includes("index.html")
+      ) {
         alert("Session expired. Please login again.", "error");
-        setTimeout(() => window.location.href = "login.html", 2000);
+        setTimeout(() => (window.location.href = "login.html"), 2000);
       }
     } else {
       localStorage.setItem("loginTime", now);
