@@ -523,7 +523,9 @@ function renderAdminClaims(claims, page = 1) {
   let html = `
       <table class="min-w-full border text-sm bg-white">
         <thead class="bg-slate-100">
-          <tr>
+          <tr><th class="border p-2">
+      <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
+    </th>
             <th class="border p-2">Claim ID</th>
             <th class="border p-2">Email</th>
             <th class="border p-2">Amount</th>
@@ -549,6 +551,9 @@ function renderAdminClaims(claims, page = 1) {
 
     html += `
         <tr class="hover:bg-slate-50">
+          <td class="border p-2 text-center">
+    <input type="checkbox" class="claim-checkbox" value="${c.claimId}">
+  </td>
           <td class="border p-2">
             <div class="flex items-center gap-2">
               ${c.claimId}
@@ -1177,6 +1182,55 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+
+
+function toggleSelectAll(source) {
+  document
+    .querySelectorAll(".claim-checkbox")
+    .forEach(cb => cb.checked = source.checked);
+}
+async function applyBulkAction() {
+  const action = document.getElementById("bulkAction").value;
+  if (!action) {
+    showToast("Select a bulk action", "warning");
+    return;
+  }
+
+  const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
+    .map(cb => cb.value);
+
+  if (selected.length === 0) {
+    showToast("No claims selected", "warning");
+    return;
+  }
+
+  showConfirm(
+    `Apply "${action}" to ${selected.length} claims?`,
+    async () => {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "bulkUpdateStatus",
+            claimIds: selected,
+            status: action
+          })
+        });
+
+        alert("Bulk status update successful");
+        loadClaims();
+
+      } catch (err) {
+        console.error(err);
+        showToast("Bulk update failed", "error");
+      }
+    }
+  );
+}
+
+
+
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
 ====================================================== */
