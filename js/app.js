@@ -523,7 +523,9 @@ function renderAdminClaims(claims, page = 1) {
   let html = `
       <table class="min-w-full border text-sm bg-white">
         <thead class="bg-slate-100">
-          <tr>
+          <tr><th class="border p-2">
+      <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
+    </th>
             <th class="border p-2">Claim ID</th>
             <th class="border p-2">Email</th>
             <th class="border p-2">Amount</th>
@@ -549,6 +551,9 @@ function renderAdminClaims(claims, page = 1) {
 
     html += `
         <tr class="hover:bg-slate-50">
+          <td class="border p-2 text-center">
+    <input type="checkbox" class="claim-checkbox" value="${c.claimId}" data-status="${c.status}">
+  </td>
           <td class="border p-2">
             <div class="flex items-center gap-2">
               ${c.claimId}
@@ -566,18 +571,35 @@ function renderAdminClaims(claims, page = 1) {
               ${c.status}
             </span>
           </td>
-          <td class="border p-2">
-            <select
-              class="border p-1 rounded"
-              onchange="updateStatus('${c.claimId}', this.value)"
-            >
-              <option value="">Select</option>
-              <option value="Submitted">Submitted</option>
-              <option value="Approved">Approved</option>
-              <option value="Declined">Declined</option>
-              <option value="Reimbursed">Reimbursed</option>
-            </select>
-          </td>
+        <td class="border p-2">
+  ${
+    (c.status === "Declined" || c.status === "Reimbursed")
+      ? `
+        <select
+          disabled
+          class="border p-1 rounded bg-slate-100 text-slate-400 cursor-not-allowed"
+        >
+          <option>${c.status}</option>
+        </select>
+        <div class="text-xs text-slate-400 mt-1">
+          Status locked
+        </div>
+      `
+      : `
+        <select
+          class="border p-1 rounded"
+          onchange="updateStatus('${c.claimId}', this.value)"
+        >
+          <option value="">Select</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Pending">Pending</option>
+          <option value="Declined">Declined</option>
+          <option value="Reimbursed">Reimbursed</option>
+        </select>
+      `
+  }
+</td>
+
           <td class="border p-2 text-center">
   ${
     c.status === "Reimbursed"
@@ -1177,6 +1199,112 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+
+
+function toggleSelectAll(source) {
+  document
+    .querySelectorAll(".claim-checkbox")
+    .forEach(cb => cb.checked = source.checked);
+}
+// async function applyBulkAction() {
+//   const action = document.getElementById("bulkAction").value;
+//   if (!action) {
+//     showToast("Select a bulk action", "warning");
+//     return;
+//   }
+
+async function applyBulkAction() {
+  const action = document.getElementById("bulkAction").value;
+
+  if (!action) {
+    showToast("Select a bulk action", "warning");
+    return;
+  }
+
+  const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
+    .map(cb => ({
+      claimId: cb.value,
+      status: cb.dataset.status
+    }));
+  if (selected.length === 0) {
+    showToast("No claims selected", "warning");
+    return;
+  }
+
+  // ❌ BLOCK if any finalized claim is selected
+  const locked = selected.filter(
+    c => c.status === "Declined" || c.status === "Reimbursed"
+  );
+
+  if (locked.length > 0) {
+    alert(
+      "Bulk update blocked. One or more selected claims are already Declined or Reimbursed.",
+      "error"
+    );
+    return;
+  }
+
+  showConfirm(
+    `Apply "${action}" to ${selected.length} claims?`,
+    async () => {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            action: "bulkUpdateStatus",
+            claimIds: selected.map(c => c.claimId),
+            status: action
+          })
+        });
+
+        showToast("Bulk status updated successfully");
+        loadClaims();
+
+      } catch (err) {
+        console.error(err);
+        showToast("Bulk update failed", "error");
+      }
+    }
+  );
+}
+
+
+//   const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
+//     .map(cb => cb.value);
+
+//   if (selected.length === 0) {
+//     showToast("No claims selected", "warning");
+//     return;
+//   }
+
+//   showConfirm(
+//     `Apply "${action}" to ${selected.length} claims?`,
+//     async () => {
+//       try {
+//         await fetch(API_URL, {
+//           method: "POST",
+//           headers: { "Content-Type": "text/plain;charset=utf-8" },
+//           body: JSON.stringify({
+//             action: "bulkUpdateStatus",
+//             claimIds: selected,
+//             status: action
+//           })
+//         });
+
+//         alert("Bulk status update successful");
+//         loadClaims();
+
+//       } catch (err) {
+//         console.error(err);
+//         showToast("Bulk update failed", "error");
+//       }
+//     }
+//   );
+// }
+
+
+
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
 ====================================================== */
