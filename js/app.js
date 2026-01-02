@@ -1,25 +1,133 @@
-// const API_URL =
-//   "https://script.google.com/macros/s/AKfycbzTw1p2p-ph6hbgMl5MKM6kzfuOQkFHJoRwRubpq7g/dev";
-const API_URL =
-  "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec";
-
-/* Security / Role Helpers */
-const ROLE_HASH = {
-  ADMIN: "X9fK2pL5mQ8jR3t",
-  USER: "B2vN9kM4lP7oJ5h",
+/* ======================================================
+   CONFIGURATION & CONSTANTS
+====================================================== */
+const CONFIG = {
+  API_URL: "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec",
+  ROLES: {
+    ADMIN: "X9fK2pL5mQ8jR3t",
+    USER: "B2vN9kM4lP7oJ5h",
+  },
+  PAGINATION: {
+    USERS: 10,
+    CLAIMS: 15,
+  },
+  SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
 };
 
-function getDecodedRole() {
-  const r = localStorage.getItem("role");
-  if (r === ROLE_HASH.ADMIN) return "ADMIN";
-  if (r === ROLE_HASH.USER) return "USER";
-  return null;
-}
+/* ======================================================
+   GLOBAL STATE
+====================================================== */
+const State = {
+  user: {
+    claims: [],
+    filteredClaims: [],
+    sort: { field: null, direction: "asc" },
+  },
+  admin: {
+    claims: [],
+    sort: { field: null, direction: "asc" },
+  },
+  users: {
+    list: [],
+    page: 1,
+  },
+};
 
-function setEncodedRole(plainRole) {
-  if (plainRole === "ADMIN") localStorage.setItem("role", ROLE_HASH.ADMIN);
-  else if (plainRole === "USER") localStorage.setItem("role", ROLE_HASH.USER);
-}
+// Temporary storage for WhatsApp action
+let selectedClaimForWhatsApp = null;
+
+/* ======================================================
+   UTILITIES IMPLEMENTATION
+====================================================== */
+const Utils = {
+  getDecodedRole: () => {
+    const r = localStorage.getItem("role");
+    if (r === CONFIG.ROLES.ADMIN) return "ADMIN";
+    if (r === CONFIG.ROLES.USER) return "USER";
+    return null;
+  },
+
+  setEncodedRole: (plainRole) => {
+    if (plainRole === "ADMIN") localStorage.setItem("role", CONFIG.ROLES.ADMIN);
+    else if (plainRole === "USER") localStorage.setItem("role", CONFIG.ROLES.USER);
+  },
+
+  timeAgo: (date) => {
+    if (!date) return "";
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    const intervals = [
+      { label: "year", seconds: 31536000 },
+      { label: "month", seconds: 2592000 },
+      { label: "day", seconds: 86400 },
+      { label: "hour", seconds: 3600 },
+      { label: "minute", seconds: 60 },
+    ];
+    for (const i of intervals) {
+      const count = Math.floor(seconds / i.seconds);
+      if (count >= 1) return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
+    }
+    return "just now";
+  },
+
+  calculateDaysApproved: (timestamp, status) => {
+    if (!timestamp || status === "Reimbursed") return 0;
+    const now = new Date();
+    const created = new Date(timestamp);
+    return Math.floor((now - created) / (1000 * 60 * 60 * 24));
+  },
+
+  getStatusInfo: (status) => {
+    const map = {
+      Submitted: { class: "bg-blue-50 text-blue-700 border border-blue-100", tooltip: "Waiting for admin review" },
+      Approved: { class: "bg-yellow-50 text-yellow-700 border border-yellow-100", tooltip: "Approved by Admin Payment Pending" },
+      Reimbursed: { class: "bg-green-50 text-green-700 border border-green-100", tooltip: "Payment processed" },
+      Declined: { class: "bg-red-50 text-red-700 border border-red-100", tooltip: "Rejected by admin" },
+    };
+    return map[status] || { class: "bg-slate-100 text-slate-600", tooltip: "" };
+  },
+
+  getSlaBadge: (days) => {
+    if (days === 0) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Today</span>`;
+    if (days <= 5) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">${days} days</span>`;
+    if (days <= 10) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">${days} days</span>`;
+    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">${days} days</span>`;
+  },
+
+  readFileAsBase64: (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.readAsDataURL(file);
+    });
+  }
+};
+
+/* ======================================================
+   API LAYER
+====================================================== */
+const Api = {
+  get: async (params = {}) => {
+    const url = new URL(CONFIG.API_URL);
+    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    const res = await fetch(url);
+    return res.json();
+  },
+
+  post: async (body) => {
+    const res = await fetch(CONFIG.API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(body)
+    });
+    // Try parsing JSON, fallback to text if needed (though app logic expects JSON mostly)
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  }
+};
 
 /* ======================================================
    CLAIM SUBMISSION
@@ -27,18 +135,6 @@ function setEncodedRole(plainRole) {
 const form = document.getElementById("claimForm");
 const fileInput = document.querySelector('input[name="receipt"]');
 const fileNameEl = document.getElementById("fileName");
-let currentClaims = [];
-let currentFilteredClaims = [];
-let currentSort = {
-  field: null,
-  direction: "asc",
-};
-
-/* Pagination Globals */
-let currentUsers = [];
-let currentUserPage = 1;
-const USERS_PER_PAGE = 10;
-const CLAIMS_PER_PAGE = 15;
 
 if (form) {
   // Show selected file name
@@ -65,25 +161,13 @@ if (form) {
     // Handle file (Base64)
     const file = fileInput.files[0];
     if (file) {
-      const reader = new FileReader();
-      const base64 = await new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result.split(",")[1]);
-        reader.readAsDataURL(file);
-      });
-
-      payload.fileData = base64;
+      payload.fileData = await Utils.readFileAsBase64(file);
       payload.fileName = file.name;
       payload.fileType = file.type;
     }
 
     try {
-      await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8", // avoid preflight
-        },
-        body: JSON.stringify(payload),
-      });
+      await Api.post(payload);
 
       // Do NOT depend on response (CORS-safe)
       result.textContent = `Claim submitted successfully!`;
@@ -118,17 +202,16 @@ async function searchClaim() {
   `;
 
   try {
-    const res = await fetch(`${API_URL}?search=${encodeURIComponent(value)}`);
-    const data = await res.json();
+    const data = await Api.get({ search: value });
 
     if (data.error) {
       output.innerHTML = `<div class="p-8 text-center text-slate-500">${data.error}</div>`;
       return;
     }
 
-    currentClaims = data.claims;
+    State.user.claims = data.claims;
     // Sort by latest (descending timestamp)
-    currentClaims.sort(
+    State.user.claims.sort(
       (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
     );
     applyUserFilter();
@@ -139,8 +222,8 @@ async function searchClaim() {
 
 function renderClaims(claims, page = 1) {
   // Handle global state if called from pagination buttons
-  if (claims) currentFilteredClaims = claims;
-  else claims = currentFilteredClaims;
+  if (claims) State.user.filteredClaims = claims;
+  else claims = State.user.filteredClaims;
 
   const output = document.getElementById("output");
 
@@ -171,10 +254,10 @@ function renderClaims(claims, page = 1) {
     return;
   }
 
-  const start = (page - 1) * CLAIMS_PER_PAGE;
-  const end = start + CLAIMS_PER_PAGE;
+  const start = (page - 1) * CONFIG.PAGINATION.CLAIMS;
+  const end = start + CONFIG.PAGINATION.CLAIMS;
   const paginatedClaims = claims.slice(start, end);
-  const totalPages = Math.ceil(claims.length / CLAIMS_PER_PAGE);
+  const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
   let html = `
     <table class="min-w-full text-left text-sm">
@@ -194,15 +277,7 @@ function renderClaims(claims, page = 1) {
 
   paginatedClaims.forEach((c) => {
     // Status Badge Logic
-    let statusClass = "bg-slate-100 text-slate-600";
-    if (c.status === "Submitted")
-      statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-    else if (c.status === "Approved")
-      statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
-    else if (c.status === "Reimbursed")
-      statusClass = "bg-green-50 text-green-700 border border-green-100";
-    else if (c.status === "Declined")
-      statusClass = "bg-red-50 text-red-700 border border-red-100";
+    const statusInfo = Utils.getStatusInfo(c.status);
 
     html += `
       <tr class="hover:bg-slate-50 transition-colors">
@@ -223,13 +298,13 @@ function renderClaims(claims, page = 1) {
         <td class="px-6 py-4 font-medium text-slate-900">₹${c.amount}</td>
         <td class="px-6 py-4">
           <span
-  title="${getStatusTooltip(c.status)}"
-  class="px-3 py-1 rounded-full text-xs font-medium cursor-help ${statusClass}"
+  title="${statusInfo.tooltip}"
+  class="px-3 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}"
 >
   ${c.status}
 </span>
 <span class="text-xs text-slate-400 mt-1 ml-1">
-    ${timeAgo(c.timestamp)}
+    ${Utils.timeAgo(c.timestamp)}
   </span>
         </td>
         <td class="px-6 py-4">
@@ -246,7 +321,7 @@ function renderClaims(claims, page = 1) {
   ${
     c.status === "Reimbursed"
       ? "-"
-      : getSlaBadge(calculateDaysApproved(c.timestamp, c.status))
+      : Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status))
   }
 </td>
 
@@ -287,41 +362,41 @@ function renderClaims(claims, page = 1) {
 
 function applyUserFilter() {
   const status = document.getElementById("userStatusFilter").value;
-  let filtered = currentClaims;
+  let filtered = State.user.claims;
 
   if (status) {
-    filtered = currentClaims.filter((c) => c.status === status);
+    filtered = State.user.claims.filter((c) => c.status === status);
   }
   renderClaims(filtered, 1);
 }
 
 function sortClaims(field) {
   document.getElementById("dateArrow").textContent =
-    currentSort.field === "date"
-      ? currentSort.direction === "asc"
+    State.user.sort.field === "date"
+      ? State.user.sort.direction === "asc"
         ? "↑"
         : "↓"
       : "";
 
   document.getElementById("idArrow").textContent =
-    currentSort.field === "claimId"
-      ? currentSort.direction === "asc"
+    State.user.sort.field === "claimId"
+      ? State.user.sort.direction === "asc"
         ? "↑"
         : "↓"
       : "";
-  if (!currentClaims || currentClaims.length === 0) return;
+  if (!State.user.claims || State.user.claims.length === 0) return;
 
   // Toggle direction if same field, else reset to asc
-  if (currentSort.field === field) {
-    currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc";
+  if (State.user.sort.field === field) {
+    State.user.sort.direction = State.user.sort.direction === "asc" ? "desc" : "asc";
   } else {
-    currentSort.field = field;
-    currentSort.direction = "asc";
+    State.user.sort.field = field;
+    State.user.sort.direction = "asc";
   }
 
-  const dir = currentSort.direction === "asc" ? 1 : -1;
+  const dir = State.user.sort.direction === "asc" ? 1 : -1;
 
-  const sorted = [...currentClaims].sort((a, b) => {
+  const sorted = [...State.user.claims].sort((a, b) => {
     if (field === "date") {
       return dir * (new Date(a.timestamp || 0) - new Date(b.timestamp || 0));
     }
@@ -333,7 +408,7 @@ function sortClaims(field) {
     return 0;
   });
 
-  currentClaims = sorted;
+  State.user.claims = sorted;
   applyUserFilter();
 }
 
@@ -341,13 +416,13 @@ function clearUserFilters() {
   document.getElementById("userStatusFilter").value = "";
   document.getElementById("searchValue").value = "";
   
-  currentSort = { field: null, direction: "asc" };
+  State.user.sort = { field: null, direction: "asc" };
   document.getElementById("dateArrow").textContent = "";
   document.getElementById("idArrow").textContent = "";
 
   // Reset Data and View
-  currentClaims = [];
-  currentFilteredClaims = [];
+  State.user.claims = [];
+  State.user.filteredClaims = [];
   document.getElementById("output").innerHTML = `
     <div class="flex flex-col items-center justify-center py-16 text-center">
       <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
@@ -363,37 +438,6 @@ function clearUserFilters() {
   `;
 }
 
-function getAdminClaims(status) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Claims_Data");
-  const rows = sheet.getDataRange().getValues();
-  const result = [];
-
-  for (let i = 1; i < rows.length; i++) {
-    if (!status || rows[i][10] === status) {
-      result.push({
-        claimId: rows[i][0],
-        email: rows[i][2],
-        amount: rows[i][6],
-        timestamp: rows[i][11],
-        status: rows[i][10],
-      });
-    }
-  }
-  return result;
-}
-function updateClaimStatus(claimId, status) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Claims_Data");
-  const rows = sheet.getDataRange().getValues();
-
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] === claimId) {
-      sheet.getRange(i + 1, 11).setValue(status);
-      sendEmails(claimId, { email: rows[i][2] }, "");
-      break;
-    }
-  }
-}
-
 async function login() {
   const mobile = document.getElementById("mobile").value;
   const password = document.getElementById("password").value;
@@ -404,23 +448,19 @@ async function login() {
   msg.textContent = "Verifying credentials...";
 
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        action: "login",
-        mobile,
-        password,
-      }),
+    const data = await Api.post({
+      action: "login",
+      mobile,
+      password,
     });
 
-    const text = await res.text();
-    const data = JSON.parse(text);
+    // API returns text sometimes, but Api.post handles JSON. Assuming standard JSON response here based on other calls.
+    // If the backend returns raw text for login, we might need adjustment, but context implies JSON structure.
     if (data.status === "success" && data.userStatus === "ACTIVE") {
       msg.className =
         "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 py-2 px-4 rounded-lg";
       msg.textContent = "Success! Redirecting...";
-      setEncodedRole(data.role);
+      Utils.setEncodedRole(data.role);
       localStorage.setItem("userMobile", mobile);
       localStorage.setItem("loginTime", Date.now());
       setTimeout(() => {
@@ -449,12 +489,12 @@ async function login() {
    ADMIN PANEL LOGIC
 ====================================================== */
 
-let currentAdminClaims = [];
-let currentAdminSort = { field: null, direction: "asc" };
-
 async function loadClaims() {
-  const status = document.getElementById("statusFilter").value;
+  const statusEl = document.getElementById("statusFilter");
+  const status = statusEl ? statusEl.value : "";
   const claimsDiv = document.getElementById("claims");
+
+  if (!claimsDiv) return;
 
   claimsDiv.innerHTML = `
     <div class="flex flex-col items-center justify-center py-12">
@@ -464,14 +504,13 @@ async function loadClaims() {
   `;
 
   try {
-    const res = await fetch(
-      `${API_URL}?action=adminClaims&status=${encodeURIComponent(status)}`
-    );
+    const params = { action: "adminClaims" };
+    if (status) params.status = status;
 
-    const data = await res.json();
+    const data = await Api.get(params);
 
-    currentAdminClaims = data || [];
-    renderAdminClaims(currentAdminClaims, 1);
+    State.admin.claims = data || [];
+    renderAdminClaims(State.admin.claims, 1);
   } catch (err) {
     console.error(err);
     claimsDiv.innerHTML =
@@ -480,8 +519,8 @@ async function loadClaims() {
 }
 
 function renderAdminClaims(claims, page = 1) {
-  if (claims) currentAdminClaims = claims;
-  else claims = currentAdminClaims;
+  if (claims) State.admin.claims = claims;
+  else claims = State.admin.claims;
 
   const claimsDiv = document.getElementById("claims");
   const paginationDiv = document.getElementById("admin-pagination");
@@ -515,10 +554,10 @@ function renderAdminClaims(claims, page = 1) {
     return;
   }
 
-  const start = (page - 1) * CLAIMS_PER_PAGE;
-  const end = start + CLAIMS_PER_PAGE;
+  const start = (page - 1) * CONFIG.PAGINATION.CLAIMS;
+  const end = start + CONFIG.PAGINATION.CLAIMS;
   const paginatedClaims = claims.slice(start, end);
-  const totalPages = Math.ceil(claims.length / CLAIMS_PER_PAGE);
+  const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
   let html = `
       <table class="min-w-full border text-sm bg-white">
@@ -529,7 +568,10 @@ function renderAdminClaims(claims, page = 1) {
             <th class="border p-2">Amount</th>
             <th class="border p-2">Current Status</th>
             <th class="border p-2">Update Status</th>
+            <th class="border p-2">Receipt</th>
             <th class="border p-2">SLA</th>
+            <th class="border p-2">WhatsApp</th>
+
 
           </tr>
         </thead>
@@ -537,15 +579,7 @@ function renderAdminClaims(claims, page = 1) {
     `;
 
   paginatedClaims.forEach((c) => {
-    let statusClass = "bg-slate-100 text-slate-600";
-    if (c.status === "Submitted")
-      statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
-    else if (c.status === "Approved")
-      statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
-    else if (c.status === "Reimbursed")
-      statusClass = "bg-green-50 text-green-700 border border-green-100";
-    else if (c.status === "Declined")
-      statusClass = "bg-red-50 text-red-700 border border-red-100";
+    const statusInfo = Utils.getStatusInfo(c.status);
 
     html += `
         <tr class="hover:bg-slate-50">
@@ -562,31 +596,69 @@ function renderAdminClaims(claims, page = 1) {
           <td class="border p-2">${c.email}</td>
           <td class="border p-2">₹${c.amount}</td>
           <td class="border p-2 font-medium">
-            <span class="px-2 py-1 rounded-full text-xs ${statusClass}">
+            <span class="px-2 py-1 rounded-full text-xs ${statusInfo.class}">
               ${c.status}
             </span>
           </td>
-          <td class="border p-2">
-            <select
-              class="border p-1 rounded"
-              onchange="updateStatus('${c.claimId}', this.value)"
-            >
-              <option value="">Select</option>
-              <option value="Submitted">Submitted</option>
-              <option value="Approved">Approved</option>
-              <option value="Declined">Declined</option>
-              <option value="Reimbursed">Reimbursed</option>
-            </select>
-          </td>
+        <td class="border p-2">
+  ${
+    (c.status === "Declined" || c.status === "Reimbursed")
+      ? `
+        <select
+          disabled
+          class="border p-1 rounded bg-slate-100 text-slate-400 cursor-not-allowed"
+        >
+          <option>${c.status}</option>
+        </select>
+        <div class="text-xs text-slate-400 mt-1">
+          Status locked
+        </div>
+      `
+      : `
+        <select
+          class="border p-1 rounded"
+          onchange="updateStatus('${c.claimId}', this.value)"
+        >
+          <option value="">Select</option>
+          <option value="Submitted">Submitted</option>
+          <option value="Pending">Pending</option>
+          <option value="Declined">Declined</option>
+          <option value="Reimbursed">Reimbursed</option>
+        </select>
+      `
+  }
+</td>
+ <td class="px-6 py-4">
+          ${
+            c.receiptUrl
+              ? `<a href="${c.receiptUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1">
+                 View
+                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+               </a>`
+              : `<span class="text-slate-400 italic">No receipt</span>`
+          }
+        </td>
           <td class="border p-2 text-center">
   ${
     c.status === "Reimbursed"
       ? "-"
-      : getSlaBadge(
-          calculateDaysApproved(c.timestamp, c.status)
+      : Utils.getSlaBadge(
+          Utils.calculateDaysApproved(c.timestamp, c.status)
         )
   }
 </td>
+<td class="border p-2 text-center">
+  <button
+    onclick='openWhatsAppModal(${JSON.stringify(c).replace(/'/g, "&apos;")})'
+    class="text-green-600 hover:text-green-800 text-lg"
+    title="Send WhatsApp message"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+    </svg>
+  </button>
+</td>
+
 
         </tr>
       `;
@@ -626,31 +698,31 @@ function renderAdminClaims(claims, page = 1) {
 
 function sortAdminClaims(field) {
   const arrow = document.getElementById("adminIdArrow");
-  if (!currentAdminClaims.length) return;
+  if (!State.admin.claims.length) return;
 
-  if (currentAdminSort.field === field) {
-    currentAdminSort.direction =
-      currentAdminSort.direction === "asc" ? "desc" : "asc";
+  if (State.admin.sort.field === field) {
+    State.admin.sort.direction =
+      State.admin.sort.direction === "asc" ? "desc" : "asc";
   } else {
-    currentAdminSort.field = field;
-    currentAdminSort.direction = "asc";
+    State.admin.sort.field = field;
+    State.admin.sort.direction = "asc";
   }
 
   if (arrow)
-    arrow.textContent = currentAdminSort.direction === "asc" ? "↑" : "↓";
-  const dir = currentAdminSort.direction === "asc" ? 1 : -1;
+    arrow.textContent = State.admin.sort.direction === "asc" ? "↑" : "↓";
+  const dir = State.admin.sort.direction === "asc" ? 1 : -1;
 
-  currentAdminClaims.sort((a, b) => {
+  State.admin.claims.sort((a, b) => {
     if (field === "claimId") return dir * a.claimId.localeCompare(b.claimId);
     return 0;
   });
 
-  renderAdminClaims(currentAdminClaims, 1);
+  renderAdminClaims(State.admin.claims, 1);
 }
 
 function clearAdminFilters() {
   document.getElementById("statusFilter").value = "";
-  currentAdminSort = { field: null, direction: "asc" };
+  State.admin.sort = { field: null, direction: "asc" };
   const arrow = document.getElementById("adminIdArrow");
   if (arrow) arrow.textContent = "";
   loadClaims();
@@ -663,16 +735,10 @@ async function updateStatus(claimId, status) {
     `Change status to "${status}"?`,
     async () => {
       try {
-        await fetch(API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-          },
-          body: JSON.stringify({
-            action: "updateStatus",
-            claimId,
-            status,
-          }),
+        await Api.post({
+          action: "updateStatus",
+          claimId,
+          status,
         });
 
         showToast("Status updated successfully");
@@ -735,12 +801,7 @@ async function requestOtp() {
   msg.className = "mt-4 text-center text-sm text-indigo-600 animate-pulse";
 
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "sendOtp", mobile }),
-    });
-    const data = await res.json();
+    const data = await Api.post({ action: "sendOtp", mobile });
 
     if (data.status === "success") {
       msg.textContent = "OTP sent to your registered email!";
@@ -773,17 +834,12 @@ async function submitReset() {
   msg.className = "mt-4 text-center text-sm text-indigo-600 animate-pulse";
 
   try {
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        action: "resetPassword",
-        mobile,
-        otp,
-        newPassword,
-      }),
+    const data = await Api.post({
+      action: "resetPassword",
+      mobile,
+      otp,
+      newPassword,
     });
-    const data = await res.json();
 
     if (data.status === "success") {
       msg.textContent = "Password updated! Redirecting to login...";
@@ -803,7 +859,7 @@ async function submitReset() {
 ====================================================== */
 
 function openManageUsers() {
-  if (localStorage.getItem("role") === "X9fK2pL5mQ8jR3t") {
+  if (localStorage.getItem("role") === CONFIG.ROLES.ADMIN) {
     window.location.href = "manage-users.html";
   } else {
     window.location.href = "login.html";
@@ -812,16 +868,14 @@ function openManageUsers() {
 
 /* -------- LOAD USERS -------- */
 async function loadUsers() {
-  if (getDecodedRole() !== "ADMIN") return;
+  if (Utils.getDecodedRole() !== "ADMIN") return;
 
   const tbody = document.getElementById("users-table-body");
   if (!tbody) return;
 
   try {
-    const res = await fetch(`${API_URL}?action=getUsers`);
-    const users = await res.json();
-
-    currentUsers = users || [];
+    const users = await Api.get({ action: "getUsers" });
+    State.users.list = users || [];
     renderUsers(1);
   } catch (err) {
     console.error(err);
@@ -833,18 +887,19 @@ async function loadUsers() {
 function renderUsers(page = 1) {
   const tbody = document.getElementById("users-table-body");
   const paginationDiv = document.getElementById("users-pagination");
+  const users = State.users.list;
 
-  if (!currentUsers || currentUsers.length === 0) {
+  if (!users || users.length === 0) {
     tbody.innerHTML =
       '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
     if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
 
-  const start = (page - 1) * USERS_PER_PAGE;
-  const end = start + USERS_PER_PAGE;
-  const paginatedUsers = currentUsers.slice(start, end);
-  const totalPages = Math.ceil(currentUsers.length / USERS_PER_PAGE);
+  const start = (page - 1) * CONFIG.PAGINATION.USERS;
+  const end = start + CONFIG.PAGINATION.USERS;
+  const paginatedUsers = users.slice(start, end);
+  const totalPages = Math.ceil(users.length / CONFIG.PAGINATION.USERS);
 
   let html = "";
   paginatedUsers.forEach((u) => {
@@ -894,8 +949,8 @@ function renderUsers(page = 1) {
         <div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100">
           <span class="text-sm text-slate-500">Showing ${
             start + 1
-          } to ${Math.min(end, currentUsers.length)} of ${
-        currentUsers.length
+          } to ${Math.min(end, users.length)} of ${
+        users.length
       } users</span>
           <div class="flex gap-2">
             <button onclick="renderUsers(${page - 1})" ${
@@ -919,7 +974,7 @@ function renderUsers(page = 1) {
 
 /* -------- ADD USER -------- */
 async function addUser() {
-  if (getDecodedRole() !== "ADMIN") {
+  if (Utils.getDecodedRole() !== "ADMIN") {
     alert("Unauthorized action", "error");
     return;
   }
@@ -933,13 +988,8 @@ async function addUser() {
     role: document.getElementById("u-role").value,
   };
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(data),
-  });
+  const result = await Api.post(data);
 
-  const result = await res.json();
   if (result.status === "success") {
     alert("User added successfully");
     setTimeout(() => (window.location.href = "manage-users.html"), 1000);
@@ -951,15 +1001,11 @@ async function addUser() {
 /* -------- ENABLE / DISABLE USER -------- */
 async function toggleUser(mobile, currentStatus) {
   const status = currentStatus === "ACTIVE" ? "DISABLED" : "ACTIVE";
-
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "updateUserStatus",
-      mobile,
-      status,
-    }),
+  
+  await Api.post({
+    action: "updateUserStatus",
+    mobile,
+    status,
   });
 
   alert(`User ${status.toLowerCase()} successfully`);
@@ -968,18 +1014,14 @@ async function toggleUser(mobile, currentStatus) {
 
 /* -------- CHANGE ROLE -------- */
 async function changeRole(mobile, role) {
-  await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "changeUserRole",
-      mobile,
-      role,
-    }),
+  await Api.post({
+    action: "changeUserRole",
+    mobile,
+    role,
   });
 
   if (localStorage.getItem("userMobile") === mobile) {
-    setEncodedRole(role);
+    Utils.setEncodedRole(role);
     if (role !== "ADMIN") {
       alert("Your role has been updated. Redirecting...");
       setTimeout(() => {
@@ -1088,63 +1130,9 @@ function showConfirm(message, onConfirm, onCancel) {
     if (onConfirm) onConfirm();
   };
 }
-/* ======================================================
-   SLA CHECK 
-====================================================== */
-function getSlaBadge(days) {
-  if (days === 0) {
-    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Today</span>`;
-  }
-  if (days <= 5) {
-    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">${days} days</span>`;
-  }
-  if (days <= 10) {
-    return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">${days} days</span>`;
-  }
-  return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">${days} days</span>`;
-}
-
-function calculateDaysApproved(timestamp, status) {
-  if (!timestamp) return 0;
-  if (status === "Reimbursed") return 0;
-
-  const now = new Date();
-  const created = new Date(timestamp);
-  return Math.floor((now - created) / (1000 * 60 * 60 * 24));
-}
-
-function getStatusTooltip(status) {
-  switch (status) {
-    case "Submitted": return "Waiting for admin review";
-    case "Approved": return "Approved by Admin Payment Pending";
-    case "Declined": return "Rejected by admin";
-    case "Reimbursed": return "Payment processed";
-    default: return "";
-  }
-}
 function copyClaimId(id) {
   navigator.clipboard.writeText(id);
   showToast("Claim ID copied: " + id);
-}
-function timeAgo(date) {
-  if (!date) return "";
-
-  const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-  const intervals = [
-    { label: "year", seconds: 31536000 },
-    { label: "month", seconds: 2592000 },
-    { label: "day", seconds: 86400 },
-    { label: "hour", seconds: 3600 },
-    { label: "minute", seconds: 60 }
-  ];
-
-  for (const i of intervals) {
-    const count = Math.floor(seconds / i.seconds);
-    if (count >= 1) {
-      return `${count} ${i.label}${count > 1 ? "s" : ""} ago`;
-    }
-  }
-  return "just now";
 }
 function showToast(message, type = "success") {
   const toast = document.createElement("div");
@@ -1177,16 +1165,145 @@ function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 300);
   }, 2500);
 }
+
+
+function toggleSelectAll(source) {
+  document
+    .querySelectorAll(".claim-checkbox")
+    .forEach(cb => cb.checked = source.checked);
+}
+
+async function applyBulkAction() {
+  const action = document.getElementById("bulkAction").value;
+
+  if (!action) {
+    showToast("Select a bulk action", "warning");
+    return;
+  }
+
+  const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
+    .map(cb => ({
+      claimId: cb.value,
+      status: cb.dataset.status
+    }));
+  if (selected.length === 0) {
+    showToast("No claims selected", "warning");
+    return;
+  }
+
+  // ❌ BLOCK if any finalized claim is selected
+  const locked = selected.filter(
+    c => c.status === "Declined" || c.status === "Reimbursed"
+  );
+
+  if (locked.length > 0) {
+    alert(
+      "Bulk update blocked. One or more selected claims are already Declined or Reimbursed.",
+      "error"
+    );
+    return;
+  }
+
+  showConfirm(
+    `Apply "${action}" to ${selected.length} claims?`,
+    async () => {
+      try {
+        await Api.post({
+          action: "bulkUpdateStatus",
+          claimIds: selected.map(c => c.claimId),
+          status: action
+        });
+
+        showToast("Bulk status updated successfully");
+        loadClaims();
+
+      } catch (err) {
+        console.error(err);
+        showToast("Bulk update failed", "error");
+      }
+    }
+  );
+}
+
+function sendWhatsAppToSelected() {
+  const claim = selectedClaimForWhatsApp;
+  if (!claim) return;
+  
+  const numbers = [];
+
+  // Check User
+ 
+
+  // Check Finance
+  if (document.getElementById("wa-agp").checked) {
+    numbers.push("919893412481"); // Finance Team
+  }
+
+  // Check Manager
+  if (document.getElementById("wa-rcp").checked) {
+    // Add manager number logic here
+    numbers.push("917869390365")
+  }
+   if (document.getElementById("wa-hgp").checked) {
+    // Add manager number logic here
+    numbers.push("919131379080")
+  }
+
+  if (numbers.length === 0) {
+    showToast("No valid recipients selected", "warning");
+    return;
+  }
+  console.log('selectedClaimForWhatsApp', selectedClaimForWhatsApp)
+  const message = buildWhatsAppMessage(selectedClaimForWhatsApp);
+
+  numbers.forEach(num => {
+    const cleanNum = num.toString().replace(/\D/g, "");
+    const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(message)}`;
+    window.open(url, "_blank");
+  });
+
+  closeWaModal();
+}
+function openWhatsAppModal(claim) {
+  selectedClaimForWhatsApp = claim;
+  document.getElementById("wa-modal").classList.remove("hidden");
+}
+
+function closeWaModal() {
+  document.getElementById("wa-modal").classList.add("hidden");
+  selectedClaimForWhatsApp = null;
+}
+
+function buildWhatsAppMessage(claim) {
+  return `
+Hare Krishna
+Dandvat Pranam
+
+Please transfer the lakshmi for the following details
+
+Claim ID   : ${claim.claimId}
+Name       : ${claim.name || "N/A"}
+Email      : ${claim.email || "N/A"}
+Department : ${claim.department || "N/A"}
+Amount     : ₹${claim.amount}
+Description: ${claim.description || "N/A"}
+Receipt    : ${claim.receiptUrl || "No Uploaded"}
+
+
+Your Servant
+`;
+}
+
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
 ====================================================== */
 function checkSession() {
   const loginTime = localStorage.getItem("loginTime");
-  const role = getDecodedRole();
+  const role = Utils.getDecodedRole();
 
   if (role && loginTime) {
     const now = Date.now();
-    const limit = 30 * 60 * 1000; // 30 minutes
+    const limit = CONFIG.SESSION_TIMEOUT;
 
     if (now - parseInt(loginTime) > limit) {
       localStorage.clear();
