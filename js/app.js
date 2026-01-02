@@ -3,6 +3,24 @@
 const API_URL =
   "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec";
 
+/* Security / Role Helpers */
+const ROLE_HASH = {
+  ADMIN: "X9fK2pL5mQ8jR3t", 
+  USER: "B2vN9kM4lP7oJ5h"
+};
+
+function getDecodedRole() {
+  const r = localStorage.getItem("role");
+  if (r === ROLE_HASH.ADMIN) return "ADMIN";
+  if (r === ROLE_HASH.USER) return "USER";
+  return null;
+}
+
+function setEncodedRole(plainRole) {
+  if (plainRole === "ADMIN") localStorage.setItem("role", ROLE_HASH.ADMIN);
+  else if (plainRole === "USER") localStorage.setItem("role", ROLE_HASH.USER);
+}
+
 /* ======================================================
    CLAIM SUBMISSION
 ====================================================== */
@@ -14,6 +32,12 @@ let currentSort = {
   field: null,
   direction: "asc"
 };
+
+/* Pagination Globals */
+let currentUsers = [];
+let currentUserPage = 1;
+const USERS_PER_PAGE = 10;
+const CLAIMS_PER_PAGE = 15;
 
 if (form) {
   // Show selected file name
@@ -107,7 +131,9 @@ async function searchClaim() {
     }
 
     currentClaims = data.claims;
-    renderClaims(currentClaims);
+    // Sort by latest (descending timestamp)
+    currentClaims.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    renderClaims(currentClaims, 1);
 
   } catch (err) {
      output.innerHTML =
@@ -115,13 +141,22 @@ async function searchClaim() {
   }
 }
 
-function renderClaims(claims) {
+function renderClaims(claims, page = 1) {
+  // Handle global state if called from pagination buttons
+  if (claims) currentClaims = claims;
+  else claims = currentClaims;
+
   const output = document.getElementById("output");
 
   if (!claims || claims.length === 0) {
     output.innerHTML = '<div class="p-8 text-center text-slate-500">No claims found</div>';
     return;
   }
+
+  const start = (page - 1) * CLAIMS_PER_PAGE;
+  const end = start + CLAIMS_PER_PAGE;
+  const paginatedClaims = claims.slice(start, end);
+  const totalPages = Math.ceil(claims.length / CLAIMS_PER_PAGE);
 
   let html = `
     <table class="min-w-full text-left text-sm">
@@ -137,7 +172,7 @@ function renderClaims(claims) {
       <tbody class="divide-y divide-slate-100">
   `;
 
-  claims.forEach(c => {
+  paginatedClaims.forEach(c => {
     // Status Badge Logic
     let statusClass = "bg-slate-100 text-slate-600";
     if (c.status === "Submitted") statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
@@ -168,6 +203,20 @@ function renderClaims(claims) {
   });
 
   html += "</tbody></table>";
+
+  // Pagination Controls
+  if (totalPages > 1) {
+    html += `
+      <div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
+        <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+        <div class="flex gap-2">
+          <button onclick="renderClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
+          <button onclick="renderClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+        </div>
+      </div>
+    `;
+  }
+
   output.innerHTML = html;
 }
 function sortClaims(field) {
@@ -201,7 +250,7 @@ document.getElementById("idArrow").textContent =
   });
 
   currentClaims = sorted;
-  renderClaims(currentClaims);
+  renderClaims(currentClaims, 1);
 }
 
 function getAdminClaims(status) {
@@ -257,7 +306,9 @@ async function login() {
     if (data.status === "success" && data.userStatus === "ACTIVE") {
       msg.className = "mt-4 text-center text-sm font-medium text-green-600 bg-green-50 py-2 px-4 rounded-lg";
       msg.textContent = "Success! Redirecting...";
-      localStorage.setItem("role", data.role);
+      setEncodedRole(data.role);
+      localStorage.setItem("userMobile", mobile);
+      localStorage.setItem("loginTime", Date.now());
       setTimeout(() => {
         window.location.href = data.role === "ADMIN" ? "admin.html" : "claim.html";
       }, 800);
@@ -303,7 +354,7 @@ async function loadClaims() {
     const data = await res.json();
 
     currentAdminClaims = data || [];
-    renderAdminClaims(currentAdminClaims);
+    renderAdminClaims(currentAdminClaims, 1);
 
   } catch (err) {
     console.error(err);
@@ -311,13 +362,23 @@ async function loadClaims() {
   }
 }
 
-function renderAdminClaims(claims) {
+function renderAdminClaims(claims, page = 1) {
+  if (claims) currentAdminClaims = claims;
+  else claims = currentAdminClaims;
+
   const claimsDiv = document.getElementById("claims");
+  const paginationDiv = document.getElementById("admin-pagination");
 
   if (!claims || claims.length === 0) {
     claimsDiv.innerHTML = '<div class="p-8 text-center text-slate-500">No claims found.</div>';
+    if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
+
+  const start = (page - 1) * CLAIMS_PER_PAGE;
+  const end = start + CLAIMS_PER_PAGE;
+  const paginatedClaims = claims.slice(start, end);
+  const totalPages = Math.ceil(claims.length / CLAIMS_PER_PAGE);
 
   let html = `
       <table class="min-w-full border text-sm bg-white">
@@ -333,7 +394,7 @@ function renderAdminClaims(claims) {
         <tbody>
     `;
 
-  claims.forEach(c => {
+  paginatedClaims.forEach(c => {
       let statusClass = "bg-slate-100 text-slate-600";
       if (c.status === "Submitted") statusClass = "bg-blue-50 text-blue-700 border border-blue-100";
       else if (c.status === "Pending") statusClass = "bg-yellow-50 text-yellow-700 border border-yellow-100";
@@ -368,6 +429,22 @@ function renderAdminClaims(claims) {
 
     html += "</tbody></table>";
     claimsDiv.innerHTML = html;
+
+    if (paginationDiv) {
+      if (totalPages > 1) {
+        paginationDiv.innerHTML = `
+          <div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
+            <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+            <div class="flex gap-2">
+              <button onclick="renderAdminClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
+              <button onclick="renderAdminClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+            </div>
+          </div>
+        `;
+      } else {
+        paginationDiv.innerHTML = "";
+      }
+    }
 }
 
 function sortAdminClaims(field) {
@@ -389,7 +466,7 @@ function sortAdminClaims(field) {
     return 0;
   });
 
-  renderAdminClaims(currentAdminClaims);
+  renderAdminClaims(currentAdminClaims, 1);
 }
 
 async function updateStatus(claimId, status) {
@@ -530,7 +607,7 @@ async function submitReset() {
 ====================================================== */
 
 function openManageUsers() {
-  if (localStorage.getItem("role") === "ADMIN") {
+  if (localStorage.getItem("role") === "X9fK2pL5mQ8jR3t") {
     window.location.href = "manage-users.html";
   } else {
     window.location.href = "login.html";
@@ -539,7 +616,7 @@ function openManageUsers() {
 
 /* -------- LOAD USERS -------- */
 async function loadUsers() {
-  if (localStorage.getItem("role") !== "ADMIN") return;
+  if (getDecodedRole() !== "ADMIN") return;
 
   const tbody = document.getElementById("users-table-body");
   if (!tbody) return;
@@ -547,14 +624,33 @@ async function loadUsers() {
   try {
     const res = await fetch(`${API_URL}?action=getUsers`);
     const users = await res.json();
+    
+    currentUsers = users || [];
+    renderUsers(1);
 
-    if (!users || users.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
-      return;
-    }
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
+  }
+}
 
-    let html = '';
-    users.forEach(u => {
+function renderUsers(page = 1) {
+  const tbody = document.getElementById("users-table-body");
+  const paginationDiv = document.getElementById("users-pagination");
+  
+  if (!currentUsers || currentUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
+    if(paginationDiv) paginationDiv.innerHTML = '';
+    return;
+  }
+
+  const start = (page - 1) * USERS_PER_PAGE;
+  const end = start + USERS_PER_PAGE;
+  const paginatedUsers = currentUsers.slice(start, end);
+  const totalPages = Math.ceil(currentUsers.length / USERS_PER_PAGE);
+
+  let html = '';
+  paginatedUsers.forEach(u => {
       const statusClass = u.status === "ACTIVE" 
         ? "bg-green-50 text-green-700 border border-green-100" 
         : "bg-red-50 text-red-700 border border-red-100";
@@ -585,16 +681,29 @@ async function loadUsers() {
       `;
     });
 
-    tbody.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>';
+  tbody.innerHTML = html;
+
+  // Render Pagination
+  if (paginationDiv) {
+    if (totalPages > 1) {
+      paginationDiv.innerHTML = `
+        <div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100">
+          <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, currentUsers.length)} of ${currentUsers.length} users</span>
+          <div class="flex gap-2">
+            <button onclick="renderUsers(${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
+            <button onclick="renderUsers(${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+          </div>
+        </div>
+      `;
+    } else {
+      paginationDiv.innerHTML = '';
+    }
   }
 }
 
 /* -------- ADD USER -------- */
 async function addUser() {
-  if (localStorage.getItem("role") !== "ADMIN") {
+  if (getDecodedRole() !== "ADMIN") {
     alert("Unauthorized action", "error");
     return;
   }
@@ -652,6 +761,17 @@ async function changeRole(mobile, role) {
       role
     })
   });
+
+  if (localStorage.getItem("userMobile") === mobile) {
+    setEncodedRole(role);
+    if (role !== "ADMIN") {
+      alert("Your role has been updated. Redirecting...");
+      setTimeout(() => {
+        window.location.href = "index.html";
+      }, 2000);
+      return;
+    }
+  }
 
   alert("Role updated successfully");
 }
@@ -744,3 +864,28 @@ function showConfirm(message, onConfirm, onCancel) {
     if (onConfirm) onConfirm();
   };
 }
+
+/* ======================================================
+   SESSION CHECK (30 Min Timeout)
+====================================================== */
+function checkSession() {
+  const loginTime = localStorage.getItem("loginTime");
+  const role = getDecodedRole();
+
+  if (role && loginTime) {
+    const now = Date.now();
+    const limit = 30 * 60 * 1000; // 30 minutes
+
+    if (now - parseInt(loginTime) > limit) {
+      localStorage.clear();
+      if (!window.location.href.includes("login.html") && !window.location.href.includes("index.html")) {
+        alert("Session expired. Please login again.", "error");
+        setTimeout(() => window.location.href = "login.html", 2000);
+      }
+    } else {
+      localStorage.setItem("loginTime", now);
+    }
+  }
+}
+
+checkSession();

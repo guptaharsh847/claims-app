@@ -7,7 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     // Redirect to login if not authenticated as ADMIN
-    if (localStorage.getItem("role") !== "ADMIN") {
+    // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
+    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
       window.location.replace("login.html");
     }
   </script>
@@ -33,11 +34,14 @@
           <span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-2"></span>
           Admin Access
         </div>
-        <button onclick="openManageUsers()" class="bg-indigo-600 text-white px-4 py-2 rounded">
+        <button onclick="openManageUsers()" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
           Manage Users
         </button>
         <div id="manage-users" class="hidden mt-6"></div>
-        <button onclick="localStorage.removeItem('role'); window.location.href='index.html'" 
+        <button onclick="localStorage.removeItem('role'); localStorage.removeItem('userMobile'); localStorage.removeItem('loginTime'); window.location.href='index.html'" 
           class="bg-white text-slate-600 hover:text-red-600 px-4 py-2 rounded-lg shadow-sm border border-slate-200 hover:border-red-200 transition text-sm font-medium flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -86,6 +90,7 @@
 
       <!-- Table Container -->
       <div id="claims" class="overflow-x-auto min-h-[300px] p-0"></div>
+      <div id="admin-pagination"></div>
     </div>
   </div>
 
