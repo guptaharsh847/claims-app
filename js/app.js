@@ -268,7 +268,7 @@ function renderClaims(claims, page = 1) {
           <th class="px-6 py-4 font-semibold text-slate-700">Amount</th>
           <th class="px-6 py-4 font-semibold text-slate-700">Status</th>
           <th class="px-6 py-4 font-semibold text-slate-700">Receipt</th>
-          <th class="border p-2">SLA</th>
+        
 
         </tr>
       </thead>
@@ -317,13 +317,7 @@ function renderClaims(claims, page = 1) {
               : `<span class="text-slate-400 italic">No receipt</span>`
           }
         </td>
-        <td class="border p-2 text-center">
-  ${
-    c.status === "Reimbursed"
-      ? "-"
-      : Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status))
-  }
-</td>
+
 
       </tr>
     `;
@@ -626,7 +620,7 @@ function renderAdminClaims(claims, page = 1) {
         >
           <option value="">Select</option>
           <option value="Submitted">Submitted</option>
-          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
           <option value="Declined">Declined</option>
           <option value="Reimbursed">Reimbursed</option>
         </select>
@@ -647,11 +641,11 @@ function renderAdminClaims(claims, page = 1) {
 
           <td class="border p-2 text-center">
   ${
-    c.status === "Reimbursed"
-      ? "-"
-      : Utils.getSlaBadge(
+    (c.status === "Submitted" || c.status === "Approved")
+      ? Utils.getSlaBadge(
           Utils.calculateDaysApproved(c.timestamp, c.status)
         )
+      : "Done"
   }
 </td>
 <td class="border p-2 text-center">
@@ -1300,112 +1294,6 @@ Receipt    : ${claim.receiptUrl || "Not Uploaded"}
 Your Servant
 `;
 }
-
-
-
-function toggleSelectAll(source) {
-  document
-    .querySelectorAll(".claim-checkbox")
-    .forEach(cb => cb.checked = source.checked);
-}
-// async function applyBulkAction() {
-//   const action = document.getElementById("bulkAction").value;
-//   if (!action) {
-//     showToast("Select a bulk action", "warning");
-//     return;
-//   }
-
-async function applyBulkAction() {
-  const action = document.getElementById("bulkAction").value;
-
-  if (!action) {
-    showToast("Select a bulk action", "warning");
-    return;
-  }
-
-  const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
-    .map(cb => ({
-      claimId: cb.value,
-      status: cb.dataset.status
-    }));
-  if (selected.length === 0) {
-    showToast("No claims selected", "warning");
-    return;
-  }
-
-  // ❌ BLOCK if any finalized claim is selected
-  const locked = selected.filter(
-    c => c.status === "Declined" || c.status === "Reimbursed"
-  );
-
-  if (locked.length > 0) {
-    alert(
-      "Bulk update blocked. One or more selected claims are already Declined or Reimbursed.",
-      "error"
-    );
-    return;
-  }
-
-  showConfirm(
-    `Apply "${action}" to ${selected.length} claims?`,
-    async () => {
-      try {
-        await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "bulkUpdateStatus",
-            claimIds: selected.map(c => c.claimId),
-            status: action
-          })
-        });
-
-        showToast("Bulk status updated successfully");
-        loadClaims();
-
-      } catch (err) {
-        console.error(err);
-        showToast("Bulk update failed", "error");
-      }
-    }
-  );
-}
-
-
-//   const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
-//     .map(cb => cb.value);
-
-//   if (selected.length === 0) {
-//     showToast("No claims selected", "warning");
-//     return;
-//   }
-
-//   showConfirm(
-//     `Apply "${action}" to ${selected.length} claims?`,
-//     async () => {
-//       try {
-//         await fetch(API_URL, {
-//           method: "POST",
-//           headers: { "Content-Type": "text/plain;charset=utf-8" },
-//           body: JSON.stringify({
-//             action: "bulkUpdateStatus",
-//             claimIds: selected,
-//             status: action
-//           })
-//         });
-
-//         alert("Bulk status update successful");
-//         loadClaims();
-
-//       } catch (err) {
-//         console.error(err);
-//         showToast("Bulk update failed", "error");
-//       }
-//     }
-//   );
-// }
-
-
 
 /* ======================================================
    SESSION CHECK (30 Min Timeout)
