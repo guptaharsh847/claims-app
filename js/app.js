@@ -260,19 +260,33 @@ function renderClaims(claims, page = 1) {
   const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
   let html = `
-    <table class="min-w-full text-left text-sm">
-      <thead class="bg-slate-50 border-b border-slate-200">
+    <table class="min-w-full border text-sm bg-white">
+      <thead class="bg-slate-100">
         <tr>
-          <th class="px-6 py-4 font-semibold text-slate-700">Claim ID</th>
-          <th class="px-6 py-4 font-semibold text-slate-700">Type</th>
-          <th class="px-6 py-4 font-semibold text-slate-700">Amount</th>
-          <th class="px-6 py-4 font-semibold text-slate-700">Status</th>
-          <th class="px-6 py-4 font-semibold text-slate-700">Receipt</th>
-        
-
+          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('claimId')">
+            Claim ID
+            <span class="text-xs ml-1">${
+              State.user.sort.field === 'claimId' 
+                ? (State.user.sort.direction === 'asc' ? '↑' : '↓') 
+                : ''
+            }</span>
+          </th>
+          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('date')">
+            Date
+            <span class="text-xs ml-1">${
+              State.user.sort.field === 'date' 
+                ? (State.user.sort.direction === 'asc' ? '↑' : '↓') 
+                : ''
+            }</span>
+          </th>
+          <th class="border p-2">Email</th>
+          <th class="border p-2">Amount</th>
+          <th class="border p-2">Status</th>
+          <th class="border p-2">Receipt</th>
+          <th class="border p-2">SLA</th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-slate-100">
+      <tbody>
   `;
 
   paginatedClaims.forEach((c) => {
@@ -280,45 +294,43 @@ function renderClaims(claims, page = 1) {
     const statusInfo = Utils.getStatusInfo(c.status);
 
     html += `
-      <tr class="hover:bg-slate-50 transition-colors">
-        <td class="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
-  ${c.claimId}
-  <button
-    onclick="copyClaimId('${c.claimId}')"
-    title="Copy Claim ID"
-    class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-    </svg>
-  </button>
-</td>
-
-        <td class="px-6 py-4 text-slate-600">${c.type}</td>
-        <td class="px-6 py-4 font-medium text-slate-900">₹${c.amount}</td>
-        <td class="px-6 py-4">
-          <span
-  title="${statusInfo.tooltip}"
-  class="px-3 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}"
->
-  ${c.status}
-</span>
-<span class="text-xs text-slate-400 mt-1 ml-1">
-    ${Utils.timeAgo(c.timestamp)}
-  </span>
+      <tr class="hover:bg-slate-50">
+        <td class="border p-2">
+          <div class="flex items-center gap-2">
+            ${c.claimId}
+            <button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
         </td>
-        <td class="px-6 py-4">
+        <td class="border p-2 text-slate-600">${new Date(c.timestamp).toLocaleDateString()}</td>
+        <td class="border p-2 text-slate-600">${c.email}</td>
+        <td class="border p-2 font-medium">₹${c.amount}</td>
+        <td class="border p-2">
+          <span title="${statusInfo.tooltip}" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}">
+            ${c.status}
+          </span>
+        </td>
+        <td class="border p-2 text-center">
           ${
             c.receiptUrl
-              ? `<a href="${c.receiptUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1">
-                 View
-                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-               </a>`
+              ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+               </button>`
               : `<span class="text-slate-400 italic">No receipt</span>`
           }
         </td>
-
-
+        <td class="border p-2 text-center">
+          ${
+            (c.status === "Submitted" || c.status === "Approved")
+              ? Utils.getSlaBadge(
+                  Utils.calculateDaysApproved(c.timestamp, c.status)
+                )
+              : "-"
+          }
+        </td>
       </tr>
     `;
   });
@@ -365,27 +377,14 @@ function applyUserFilter() {
 }
 
 function sortClaims(field) {
-  document.getElementById("dateArrow").textContent =
-    State.user.sort.field === "date"
-      ? State.user.sort.direction === "asc"
-        ? "↑"
-        : "↓"
-      : "";
-
-  document.getElementById("idArrow").textContent =
-    State.user.sort.field === "claimId"
-      ? State.user.sort.direction === "asc"
-        ? "↑"
-        : "↓"
-      : "";
   if (!State.user.claims || State.user.claims.length === 0) return;
 
-  // Toggle direction if same field, else reset to asc
+  // Toggle direction if same field, else reset to desc
   if (State.user.sort.field === field) {
     State.user.sort.direction = State.user.sort.direction === "asc" ? "desc" : "asc";
   } else {
     State.user.sort.field = field;
-    State.user.sort.direction = "asc";
+    State.user.sort.direction = "desc";
   }
 
   const dir = State.user.sort.direction === "asc" ? 1 : -1;
@@ -411,8 +410,6 @@ function clearUserFilters() {
   document.getElementById("searchValue").value = "";
   
   State.user.sort = { field: null, direction: "asc" };
-  document.getElementById("dateArrow").textContent = "";
-  document.getElementById("idArrow").textContent = "";
 
   // Reset Data and View
   State.user.claims = [];
@@ -553,13 +550,63 @@ function renderAdminClaims(claims, page = 1) {
   const paginatedClaims = claims.slice(start, end);
   const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
+  // --- DASHBOARD ANALYTICS CALCULATION ---
+  const totalPending = claims.filter(c => c.status === "Submitted" || c.status === "Approved").length;
+  const totalAmountPending = claims
+    .filter(c => c.status === "Submitted" || c.status === "Approved")
+    .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+  const monthName = now.toLocaleString('default', { month: 'long' });
+
+  const totalReimbursedAmount = claims.filter(c => {
+    if (c.status !== "Reimbursed") return false;
+
+    // Extract date from Claim ID (Format: CLM-YYYYMMDD-XXXX)
+    const parts = c.claimId ? c.claimId.split('-') : [];
+    if (parts.length < 2) return false;
+
+    const dateStr = parts[1]; // YYYYMMDD
+    if (!dateStr || dateStr.length !== 8) return false;
+
+    const year = parseInt(dateStr.substring(0, 4), 10);
+    const month = parseInt(dateStr.substring(4, 6), 10) - 1; // 0-indexed
+    
+    return month === currentMonth && year === currentYear;
+  }).reduce((sum, c) => sum + (parseFloat(String(c.amount).replace(/,/g, '')) || 0), 0);
+  
   let html = `
+      <!-- Dashboard Stats -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pending Approval</div>
+          <div class="text-2xl font-bold text-slate-800 mt-1">${totalPending} <span class="text-sm font-normal text-slate-400">claims</span></div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pending Amount</div>
+          <div class="text-2xl font-bold text-indigo-600 mt-1">₹${totalAmountPending.toLocaleString()}</div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Reimbursed (${monthName})</div>
+          <div class="text-2xl font-bold text-green-600 mt-1">₹${totalReimbursedAmount.toLocaleString()}</div>
+        </div>
+      </div>
+
       <table class="min-w-full border text-sm bg-white">
         <thead class="bg-slate-100">
           <tr><th class="border p-2">
       <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
     </th>
-            <th class="border p-2">Claim ID</th>
+            <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortAdminClaims('claimId')">
+              Claim ID 
+              <span class="text-xs ml-1">${
+                State.admin.sort.field === 'claimId' 
+                  ? (State.admin.sort.direction === 'asc' ? '↑' : '↓') 
+                  : ''
+              }</span>
+            </th>
             <th class="border p-2">Email</th>
             <th class="border p-2">Amount</th>
             <th class="border p-2">Current Status</th>
@@ -627,13 +674,12 @@ function renderAdminClaims(claims, page = 1) {
       `
   }
 </td>
- <td class="px-6 py-4">
+ <td class="border p-2 text-center">
           ${
             c.receiptUrl
-              ? `<a href="${c.receiptUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium hover:underline inline-flex items-center gap-1">
-                 View
-                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-               </a>`
+              ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+               </button>`
               : `<span class="text-slate-400 italic">No receipt</span>`
           }
         </td>
@@ -698,7 +744,6 @@ function renderAdminClaims(claims, page = 1) {
 }
 
 function sortAdminClaims(field) {
-  const arrow = document.getElementById("adminIdArrow");
   if (!State.admin.claims.length) return;
 
   if (State.admin.sort.field === field) {
@@ -706,11 +751,9 @@ function sortAdminClaims(field) {
       State.admin.sort.direction === "asc" ? "desc" : "asc";
   } else {
     State.admin.sort.field = field;
-    State.admin.sort.direction = "asc";
+    State.admin.sort.direction = "desc";
   }
 
-  if (arrow)
-    arrow.textContent = State.admin.sort.direction === "asc" ? "↑" : "↓";
   const dir = State.admin.sort.direction === "asc" ? 1 : -1;
 
   State.admin.claims.sort((a, b) => {
@@ -724,8 +767,6 @@ function sortAdminClaims(field) {
 function clearAdminFilters() {
   document.getElementById("statusFilter").value = "";
   State.admin.sort = { field: null, direction: "asc" };
-  const arrow = document.getElementById("adminIdArrow");
-  if (arrow) arrow.textContent = "";
   loadClaims();
 }
 
@@ -1293,6 +1334,67 @@ Receipt    : ${claim.receiptUrl || "Not Uploaded"}
 
 Your Servant
 `;
+}
+
+/* ======================================================
+   RECEIPT MODAL
+====================================================== */
+function openReceiptModal(url) {
+  let embedUrl = url;
+  // Convert Google Drive view links to preview links for embedding
+  if (url.includes("drive.google.com") && url.includes("/view")) {
+    embedUrl = url.replace(/\/view.*/, "/preview");
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "receipt-modal";
+  overlay.className = "fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
+  
+  overlay.innerHTML = `
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col transform scale-95 transition-transform">
+      <div class="flex justify-between items-center p-4 border-b border-slate-100">
+        <h3 class="text-lg font-bold text-slate-800">Receipt Preview</h3>
+        <div class="flex gap-3">
+            <a href="${url}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center gap-1">
+                Open in New Tab
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+            <button onclick="closeReceiptModal()" class="text-slate-400 hover:text-slate-600 transition p-1 hover:bg-slate-100 rounded-full">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+        </div>
+      </div>
+      <div class="flex-1 bg-slate-50 p-1 relative">
+        <div class="absolute inset-0 flex items-center justify-center z-0">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-200 border-t-indigo-600"></div>
+        </div>
+        <iframe src="${embedUrl}" class="w-full h-full rounded border border-slate-200 relative z-10 bg-white" allow="autoplay"></iframe>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  requestAnimationFrame(() => {
+    overlay.classList.remove("opacity-0");
+    overlay.querySelector("div").classList.remove("scale-95");
+    overlay.querySelector("div").classList.add("scale-100");
+  });
+  
+  overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeReceiptModal();
+  });
+}
+
+function closeReceiptModal() {
+    const overlay = document.getElementById("receipt-modal");
+    if (overlay) {
+        overlay.classList.add("opacity-0");
+        overlay.querySelector("div").classList.add("scale-95");
+        setTimeout(() => overlay.remove(), 200);
+    }
 }
 
 /* ======================================================
