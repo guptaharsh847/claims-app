@@ -2,7 +2,8 @@
    CONFIGURATION & CONSTANTS
 ====================================================== */
 const CONFIG = {
-  API_URL: "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec",
+  API_URL:
+    "https://script.google.com/macros/s/AKfycbwaXAA-wI-8h7iG29y5j31eYC1Xv_lDeCWl9FIkZDLP6ntCZfAgNhPDS_kkZXJIlVfQ/exec",
   ROLES: {
     ADMIN: "X9fK2pL5mQ8jR3t",
     USER: "B2vN9kM4lP7oJ5h",
@@ -49,7 +50,8 @@ const Utils = {
 
   setEncodedRole: (plainRole) => {
     if (plainRole === "ADMIN") localStorage.setItem("role", CONFIG.ROLES.ADMIN);
-    else if (plainRole === "USER") localStorage.setItem("role", CONFIG.ROLES.USER);
+    else if (plainRole === "USER")
+      localStorage.setItem("role", CONFIG.ROLES.USER);
   },
 
   timeAgo: (date) => {
@@ -78,18 +80,33 @@ const Utils = {
 
   getStatusInfo: (status) => {
     const map = {
-      Submitted: { class: "bg-blue-50 text-blue-700 border border-blue-100", tooltip: "Waiting for admin review" },
-      Approved: { class: "bg-yellow-50 text-yellow-700 border border-yellow-100", tooltip: "Approved by Admin Payment Pending" },
-      Reimbursed: { class: "bg-green-50 text-green-700 border border-green-100", tooltip: "Payment processed" },
-      Declined: { class: "bg-red-50 text-red-700 border border-red-100", tooltip: "Rejected by admin" },
+      Submitted: {
+        class: "bg-blue-50 text-blue-700 border border-blue-100",
+        tooltip: "Waiting for admin review",
+      },
+      Approved: {
+        class: "bg-yellow-50 text-yellow-700 border border-yellow-100",
+        tooltip: "Approved by Admin Payment Pending",
+      },
+      Reimbursed: {
+        class: "bg-green-50 text-green-700 border border-green-100",
+        tooltip: "Payment processed",
+      },
+      Declined: {
+        class: "bg-red-50 text-red-700 border border-red-100",
+        tooltip: "Rejected by admin",
+      },
     };
     return map[status] || { class: "bg-slate-100 text-slate-600", tooltip: "" };
   },
 
   getSlaBadge: (days) => {
-    if (days === 0) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Today</span>`;
-    if (days <= 5) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">${days} days</span>`;
-    if (days <= 10) return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">${days} days</span>`;
+    if (days === 0)
+      return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">Today</span>`;
+    if (days <= 5)
+      return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">${days} days</span>`;
+    if (days <= 10)
+      return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">${days} days</span>`;
     return `<span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-100">${days} days</span>`;
   },
 
@@ -99,7 +116,7 @@ const Utils = {
       reader.onload = () => resolve(reader.result.split(",")[1]);
       reader.readAsDataURL(file);
     });
-  }
+  },
 };
 
 /* ======================================================
@@ -108,7 +125,9 @@ const Utils = {
 const Api = {
   get: async (params = {}) => {
     const url = new URL(CONFIG.API_URL);
-    Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+    Object.keys(params).forEach((key) =>
+      url.searchParams.append(key, params[key])
+    );
     const res = await fetch(url);
     return res.json();
   },
@@ -117,7 +136,7 @@ const Api = {
     const res = await fetch(CONFIG.API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
     // Try parsing JSON, fallback to text if needed (though app logic expects JSON mostly)
     const text = await res.text();
@@ -126,7 +145,7 @@ const Api = {
     } catch {
       return text;
     }
-  }
+  },
 };
 
 /* ======================================================
@@ -266,17 +285,21 @@ function renderClaims(claims, page = 1) {
           <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('claimId')">
             Claim ID
             <span class="text-xs ml-1">${
-              State.user.sort.field === 'claimId' 
-                ? (State.user.sort.direction === 'asc' ? '↑' : '↓') 
-                : ''
+              State.user.sort.field === "claimId"
+                ? State.user.sort.direction === "asc"
+                  ? "↑"
+                  : "↓"
+                : ""
             }</span>
           </th>
           <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('date')">
             Date
             <span class="text-xs ml-1">${
-              State.user.sort.field === 'date' 
-                ? (State.user.sort.direction === 'asc' ? '↑' : '↓') 
-                : ''
+              State.user.sort.field === "date"
+                ? State.user.sort.direction === "asc"
+                  ? "↑"
+                  : "↓"
+                : ""
             }</span>
           </th>
           <th class="border p-2">Email</th>
@@ -298,18 +321,26 @@ function renderClaims(claims, page = 1) {
         <td class="border p-2">
           <div class="flex items-center gap-2">
             ${c.claimId}
-            <button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
+            <button onclick="copyClaimId('${
+              c.claimId
+            }')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
             </button>
           </div>
         </td>
-        <td class="border p-2 text-slate-600">${new Date(c.timestamp).toLocaleDateString()}</td>
+        <td class="border p-2 text-slate-600">${new Date(
+          c.timestamp
+        ).toLocaleDateString()}</td>
         <td class="border p-2 text-slate-600">${c.email}</td>
         <td class="border p-2 font-medium">₹${c.amount}</td>
         <td class="border p-2">
-          <span title="${statusInfo.tooltip}" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}">
+          <span title="${
+            statusInfo.tooltip
+          }" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${
+      statusInfo.class
+    }">
             ${c.status}
           </span>
         </td>
@@ -324,7 +355,7 @@ function renderClaims(claims, page = 1) {
         </td>
         <td class="border p-2 text-center">
           ${
-            (c.status === "Submitted" || c.status === "Approved")
+            c.status === "Submitted" || c.status === "Approved"
               ? Utils.getSlaBadge(
                   Utils.calculateDaysApproved(c.timestamp, c.status)
                 )
@@ -363,7 +394,6 @@ function renderClaims(claims, page = 1) {
 
   output.innerHTML = html;
   output.scrollIntoView({ behavior: "smooth", block: "start" });
-
 }
 
 function applyUserFilter() {
@@ -381,7 +411,8 @@ function sortClaims(field) {
 
   // Toggle direction if same field, else reset to desc
   if (State.user.sort.field === field) {
-    State.user.sort.direction = State.user.sort.direction === "asc" ? "desc" : "asc";
+    State.user.sort.direction =
+      State.user.sort.direction === "asc" ? "desc" : "asc";
   } else {
     State.user.sort.field = field;
     State.user.sort.direction = "desc";
@@ -408,7 +439,7 @@ function sortClaims(field) {
 function clearUserFilters() {
   document.getElementById("userStatusFilter").value = "";
   document.getElementById("searchValue").value = "";
-  
+
   State.user.sort = { field: null, direction: "asc" };
 
   // Reset Data and View
@@ -433,6 +464,13 @@ async function login() {
   const mobile = document.getElementById("mobile").value;
   const password = document.getElementById("password").value;
   const msg = document.getElementById("msg");
+
+  if (!/^\d{10}$/.test(mobile)) {
+    msg.className =
+      "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";
+    msg.textContent = "Please enter a valid 10-digit mobile number";
+    return;
+  }
 
   msg.className =
     "mt-4 text-center text-sm font-medium text-indigo-600 bg-indigo-50 py-2 px-4 rounded-lg animate-pulse";
@@ -514,11 +552,11 @@ function renderAdminClaims(claims, page = 1) {
   else claims = State.admin.claims;
 
   const claimsDiv = document.getElementById("claims");
+  const statsDiv = document.getElementById("admin-stats");
   const paginationDiv = document.getElementById("admin-pagination");
 
   if (!claims || claims.length === 0) {
-    claimsDiv.innerHTML =
-      `
+    claimsDiv.innerHTML = `
   <div class="flex flex-col items-center justify-center py-16 text-center">
     <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -541,6 +579,7 @@ function renderAdminClaims(claims, page = 1) {
     </a>
   </div>
 `;
+    if (statsDiv) statsDiv.innerHTML = "";
     if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
@@ -551,60 +590,96 @@ function renderAdminClaims(claims, page = 1) {
   const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
   // --- DASHBOARD ANALYTICS CALCULATION ---
-  const totalPending = claims.filter(c => c.status === "Submitted" || c.status === "Approved").length;
+  const totalPending = claims.filter(
+    (c) => c.status === "Submitted" || c.status === "Approved"
+  ).length;
   const totalAmountPending = claims
-    .filter(c => c.status === "Submitted" || c.status === "Approved")
+    .filter((c) => c.status === "Submitted" || c.status === "Approved")
     .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0);
 
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  const monthName = now.toLocaleString('default', { month: 'long' });
+  const monthName = now.toLocaleString("default", { month: "long" });
 
-  const totalReimbursedAmount = claims.filter(c => {
-    if (c.status !== "Reimbursed") return false;
+  const totalReimbursedAmount = claims
+    .filter((c) => {
+      if (c.status !== "Reimbursed") return false;
 
-    // Extract date from Claim ID (Format: CLM-YYYYMMDD-XXXX)
-    const parts = c.claimId ? c.claimId.split('-') : [];
-    if (parts.length < 2) return false;
+      // Extract date from Claim ID (Format: CLM-YYYYMMDD-XXXX)
+      const parts = c.claimId ? c.claimId.split("-") : [];
+      if (parts.length < 2) return false;
 
-    const dateStr = parts[1]; // YYYYMMDD
-    if (!dateStr || dateStr.length !== 8) return false;
+      const dateStr = parts[1]; // YYYYMMDD
+      if (!dateStr || dateStr.length !== 8) return false;
 
-    const year = parseInt(dateStr.substring(0, 4), 10);
-    const month = parseInt(dateStr.substring(4, 6), 10) - 1; // 0-indexed
-    
-    return month === currentMonth && year === currentYear;
-  }).reduce((sum, c) => sum + (parseFloat(String(c.amount).replace(/,/g, '')) || 0), 0);
-  
-  let html = `
-      <!-- Dashboard Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pending Approval</div>
-          <div class="text-2xl font-bold text-slate-800 mt-1">${totalPending} <span class="text-sm font-normal text-slate-400">claims</span></div>
+      const year = parseInt(dateStr.substring(0, 4), 10);
+      const month = parseInt(dateStr.substring(4, 6), 10) - 1; // 0-indexed
+
+      return month === currentMonth && year === currentYear;
+    })
+    .reduce(
+      (sum, c) => sum + (parseFloat(String(c.amount).replace(/,/g, "")) || 0),
+      0
+    );
+
+  // Render Stats
+  if (statsDiv) {
+    statsDiv.innerHTML = `
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Pending Approval</p>
+          <h3 class="text-3xl font-bold text-slate-800">${totalPending}</h3>
+          <p class="text-xs text-slate-400 mt-1">Claims waiting for action</p>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Pending Amount</div>
-          <div class="text-2xl font-bold text-indigo-600 mt-1">₹${totalAmountPending.toLocaleString()}</div>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider">Total Reimbursed (${monthName})</div>
-          <div class="text-2xl font-bold text-green-600 mt-1">₹${totalReimbursedAmount.toLocaleString()}</div>
+        <div class="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
       </div>
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Pending Amount</p>
+          <h3 class="text-3xl font-bold text-slate-800">₹${totalAmountPending.toLocaleString()}</h3>
+          <p class="text-xs text-slate-400 mt-1">Total value of pending claims</p>
+        </div>
+        <div class="p-3 bg-orange-50 rounded-xl text-orange-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+          <p class="text-sm font-medium text-slate-500 mb-1">Reimbursed (${monthName})</p>
+          <h3 class="text-3xl font-bold text-slate-800">₹${totalReimbursedAmount.toLocaleString()}</h3>
+          <p class="text-xs text-slate-400 mt-1">Processed this month</p>
+        </div>
+        <div class="p-3 bg-green-50 rounded-xl text-green-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+    `;
+  }
 
-      <table class="min-w-full border text-sm bg-white">
-        <thead class="bg-slate-100">
-          <tr><th class="border p-2">
-      <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)">
-    </th>
-            <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortAdminClaims('claimId')">
+  let html = `
+      <table class="min-w-full text-sm text-left">
+        <thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+          <tr>
+            <th class="px-6 py-4 font-semibold w-12">
+              <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+            </th>
+            <th class="px-6 py-4 font-semibold cursor-pointer hover:text-indigo-600 transition-colors" onclick="sortAdminClaims('claimId')">
               Claim ID 
               <span class="text-xs ml-1">${
-                State.admin.sort.field === 'claimId' 
-                  ? (State.admin.sort.direction === 'asc' ? '↑' : '↓') 
-                  : ''
+                State.admin.sort.field === "claimId"
+                  ? State.admin.sort.direction === "asc"
+                    ? "↑"
+                    : "↓"
+                  : ""
               }</span>
             </th>
             <th class="border p-2">Email</th>
@@ -614,45 +689,47 @@ function renderAdminClaims(claims, page = 1) {
             <th class="border p-2">Receipt</th>
             <th class="border p-2">SLA</th>
             <th class="border p-2">WhatsApp</th>
-
-
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-slate-100">
     `;
 
   paginatedClaims.forEach((c) => {
     const statusInfo = Utils.getStatusInfo(c.status);
 
     html += `
-        <tr class="hover:bg-slate-50">
-          <td class="border p-2 text-center">
-    <input type="checkbox" class="claim-checkbox" value="${c.claimId}" data-status="${c.status}">
-  </td>
-          <td class="border p-2">
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-6 py-4 text-center">
+            <input type="checkbox" class="claim-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="${
+              c.claimId
+            }" data-status="${c.status}">
+          </td>
+          <td class="px-6 py-4">
             <div class="flex items-center gap-2">
               ${c.claimId}
-              <button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
+              <button onclick="copyClaimId('${
+                c.claimId
+              }')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </button>
             </div>
           </td>
-          <td class="border p-2">${c.email}</td>
-          <td class="border p-2">₹${c.amount}</td>
-          <td class="border p-2 font-medium">
+          <td class="px-6 py-4 text-slate-600">${c.email}</td>
+          <td class="px-6 py-4 font-medium text-slate-900">₹${c.amount}</td>
+          <td class="px-6 py-4 font-medium">
             <span class="px-2 py-1 rounded-full text-xs ${statusInfo.class}">
               ${c.status}
             </span>
           </td>
-        <td class="border p-2">
+        <td class="px-6 py-4">
   ${
-    (c.status === "Declined" || c.status === "Reimbursed")
+    c.status === "Declined" || c.status === "Reimbursed"
       ? `
         <select
           disabled
-          class="border p-1 rounded bg-slate-100 text-slate-400 cursor-not-allowed"
+          class="border border-slate-200 p-1.5 rounded-lg bg-slate-50 text-slate-400 cursor-not-allowed text-sm w-full"
         >
           <option>${c.status}</option>
         </select>
@@ -662,7 +739,7 @@ function renderAdminClaims(claims, page = 1) {
       `
       : `
         <select
-          class="border p-1 rounded"
+          class="border border-slate-300 p-1.5 rounded-lg text-slate-700 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full"
           onchange="updateStatus('${c.claimId}', this.value)"
         >
           <option value="">Select</option>
@@ -674,7 +751,7 @@ function renderAdminClaims(claims, page = 1) {
       `
   }
 </td>
- <td class="border p-2 text-center">
+ <td class="px-6 py-4 text-center">
           ${
             c.receiptUrl
               ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt">
@@ -685,20 +762,33 @@ function renderAdminClaims(claims, page = 1) {
         </td>
        
 
-          <td class="border p-2 text-center">
+          <td class="px-6 py-4 text-center">
   ${
-    (c.status === "Submitted" || c.status === "Approved")
-      ? Utils.getSlaBadge(
-          Utils.calculateDaysApproved(c.timestamp, c.status)
-        )
+    c.status === "Submitted" || c.status === "Approved"
+      ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status))
       : "Done"
   }
 </td>
-<td class="border p-2 text-center">
+<td class="px-6 py-4 text-center">
   <button
-    ${(c.status === "Reimbursed" || c.status === "Declined") ? "disabled" : `onclick='openWhatsAppModal(${JSON.stringify(c).replace(/'/g, "&apos;")})'`}
-    class="${(c.status === "Reimbursed" || c.status === "Declined") ? "text-slate-300 cursor-not-allowed" : "text-green-600 hover:text-green-800"} text-lg"
-    title="${(c.status === "Reimbursed" || c.status === "Declined") ? "Action not available" : "Send WhatsApp message"}"
+    ${
+      c.status === "Reimbursed" || c.status === "Declined"
+        ? "disabled"
+        : `onclick='openWhatsAppModal(${JSON.stringify(c).replace(
+            /'/g,
+            "&apos;"
+          )})'`
+    }
+    class="${
+      c.status === "Reimbursed" || c.status === "Declined"
+        ? "text-slate-300 cursor-not-allowed"
+        : "text-green-600 hover:text-green-800"
+    } text-lg"
+    title="${
+      c.status === "Reimbursed" || c.status === "Declined"
+        ? "Action not available"
+        : "Send WhatsApp message"
+    }"
   >
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
       <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
@@ -784,7 +874,7 @@ async function updateStatus(claimId, status) {
         });
 
         showToast("Status updated successfully");
-    
+
         loadClaims();
       } catch (err) {
         console.error(err);
@@ -832,6 +922,12 @@ function showLogin() {
 async function requestOtp() {
   const mobile = document.getElementById("reset-mobile").value;
   const msg = document.getElementById("msg");
+
+  if (!/^\d{10}$/.test(mobile)) {
+    msg.textContent = "Please enter a valid 10-digit mobile number";
+    msg.className = "mt-4 text-center text-sm text-red-500";
+    return;
+  }
 
   if (!mobile) {
     msg.textContent = "Please enter mobile number";
@@ -991,9 +1087,7 @@ function renderUsers(page = 1) {
         <div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100">
           <span class="text-sm text-slate-500">Showing ${
             start + 1
-          } to ${Math.min(end, users.length)} of ${
-        users.length
-      } users</span>
+          } to ${Math.min(end, users.length)} of ${users.length} users</span>
           <div class="flex gap-2">
             <button onclick="renderUsers(${page - 1})" ${
         page === 1
@@ -1043,7 +1137,7 @@ async function addUser() {
 /* -------- ENABLE / DISABLE USER -------- */
 async function toggleUser(mobile, currentStatus) {
   const status = currentStatus === "ACTIVE" ? "DISABLED" : "ACTIVE";
-  
+
   await Api.post({
     action: "updateUserStatus",
     mobile,
@@ -1208,11 +1302,10 @@ function showToast(message, type = "success") {
   }, 2500);
 }
 
-
 function toggleSelectAll(source) {
   document
     .querySelectorAll(".claim-checkbox")
-    .forEach(cb => cb.checked = source.checked);
+    .forEach((cb) => (cb.checked = source.checked));
 }
 
 async function applyBulkAction() {
@@ -1223,11 +1316,12 @@ async function applyBulkAction() {
     return;
   }
 
-  const selected = [...document.querySelectorAll(".claim-checkbox:checked")]
-    .map(cb => ({
-      claimId: cb.value,
-      status: cb.dataset.status
-    }));
+  const selected = [
+    ...document.querySelectorAll(".claim-checkbox:checked"),
+  ].map((cb) => ({
+    claimId: cb.value,
+    status: cb.dataset.status,
+  }));
   if (selected.length === 0) {
     showToast("No claims selected", "warning");
     return;
@@ -1235,7 +1329,7 @@ async function applyBulkAction() {
 
   // ❌ BLOCK if any finalized claim is selected
   const locked = selected.filter(
-    c => c.status === "Declined" || c.status === "Reimbursed"
+    (c) => c.status === "Declined" || c.status === "Reimbursed"
   );
 
   if (locked.length > 0) {
@@ -1246,35 +1340,30 @@ async function applyBulkAction() {
     return;
   }
 
-  showConfirm(
-    `Apply "${action}" to ${selected.length} claims?`,
-    async () => {
-      try {
-        await Api.post({
-          action: "bulkUpdateStatus",
-          claimIds: selected.map(c => c.claimId),
-          status: action
-        });
+  showConfirm(`Apply "${action}" to ${selected.length} claims?`, async () => {
+    try {
+      await Api.post({
+        action: "bulkUpdateStatus",
+        claimIds: selected.map((c) => c.claimId),
+        status: action,
+      });
 
-        showToast("Bulk status updated successfully");
-        loadClaims();
-
-      } catch (err) {
-        console.error(err);
-        showToast("Bulk update failed", "error");
-      }
+      showToast("Bulk status updated successfully");
+      loadClaims();
+    } catch (err) {
+      console.error(err);
+      showToast("Bulk update failed", "error");
     }
-  );
+  });
 }
 
 function sendWhatsAppToSelected() {
   const claim = selectedClaimForWhatsApp;
   if (!claim) return;
-  
+
   const numbers = [];
 
   // Check User
- 
 
   // Check Finance
   if (document.getElementById("wa-agp").checked) {
@@ -1284,21 +1373,21 @@ function sendWhatsAppToSelected() {
   // Check Manager
   if (document.getElementById("wa-rcp").checked) {
     // Add manager number logic here
-    numbers.push("917869390365")
+    numbers.push("917869390365");
   }
-   if (document.getElementById("wa-hgp").checked) {
+  if (document.getElementById("wa-hgp").checked) {
     // Add manager number logic here
-    numbers.push("919131379080")
+    numbers.push("919131379080");
   }
 
   if (numbers.length === 0) {
     showToast("No valid recipients selected", "warning");
     return;
   }
-  console.log('selectedClaimForWhatsApp', selectedClaimForWhatsApp)
+  console.log("selectedClaimForWhatsApp", selectedClaimForWhatsApp);
   const message = buildWhatsAppMessage(selectedClaimForWhatsApp);
 
-  numbers.forEach(num => {
+  numbers.forEach((num) => {
     const cleanNum = num.toString().replace(/\D/g, "");
     const url = `https://wa.me/${cleanNum}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
@@ -1348,8 +1437,9 @@ function openReceiptModal(url) {
 
   const overlay = document.createElement("div");
   overlay.id = "receipt-modal";
-  overlay.className = "fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
-  
+  overlay.className =
+    "fixed inset-0 bg-slate-900/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity opacity-0";
+
   overlay.innerHTML = `
     <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col transform scale-95 transition-transform">
       <div class="flex justify-between items-center p-4 border-b border-slate-100">
@@ -1382,19 +1472,19 @@ function openReceiptModal(url) {
     overlay.querySelector("div").classList.remove("scale-95");
     overlay.querySelector("div").classList.add("scale-100");
   });
-  
-  overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeReceiptModal();
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeReceiptModal();
   });
 }
 
 function closeReceiptModal() {
-    const overlay = document.getElementById("receipt-modal");
-    if (overlay) {
-        overlay.classList.add("opacity-0");
-        overlay.querySelector("div").classList.add("scale-95");
-        setTimeout(() => overlay.remove(), 200);
-    }
+  const overlay = document.getElementById("receipt-modal");
+  if (overlay) {
+    overlay.classList.add("opacity-0");
+    overlay.querySelector("div").classList.add("scale-95");
+    setTimeout(() => overlay.remove(), 200);
+  }
 }
 
 /* ======================================================
