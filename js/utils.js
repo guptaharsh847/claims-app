@@ -75,6 +75,18 @@ const Utils = {
       reader.readAsDataURL(file);
     });
   },
+
+  parseClaimDate: (claimId) => {
+    if (!claimId) return null;
+    const parts = claimId.split("-");
+    if (parts.length < 2) return null;
+    const dateStr = parts[1];
+    if (!dateStr || dateStr.length !== 8) return null;
+    const year = parseInt(dateStr.substring(0, 4), 10);
+    const month = parseInt(dateStr.substring(4, 6), 10) - 1;
+    const day = parseInt(dateStr.substring(6, 8), 10);
+    return new Date(year, month, day);
+  },
 };
 
 /* UI Helpers */

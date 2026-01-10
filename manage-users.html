@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Users - Claims Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Redirect to login if not authenticated as ADMIN
+    // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
+    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
+      window.location.replace("login.html");
+    }
+  </script>
  
 </head>
 <body class="bg-slate-50 min-h-screen p-6">

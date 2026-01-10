@@ -264,5 +264,41 @@ async function changeRole(mobile, role) {
   alert("Role updated successfully");
 }
 
+function exportToCSV() {
+  const claims = State.admin.claims;
+  if (!claims || !claims.length) {
+    showToast("No data to export", "warning");
+    return;
+  }
+
+  // Define headers
+  const headers = ["Claim ID", "Email", "Amount", "Status", "Date", "Receipt URL"];
+  
+  // Create CSV content
+  const csvRows = [headers.join(",")];
+
+  claims.forEach(c => {
+    const row = [
+      c.claimId,
+      c.email,
+      c.amount,
+      c.status,
+      c.timestamp ? new Date(c.timestamp).toLocaleDateString() : "",
+      c.receiptUrl || ""
+    ];
+    // Escape quotes and join
+    csvRows.push(row.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","));
+  });
+
+  // Download
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `claims_export_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 if (document.getElementById("claims")) loadClaims();
 if (document.getElementById("users-table-body")) loadUsers();
