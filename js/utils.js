@@ -1,3 +1,28 @@
+/* ======================================================
+   PATH VALIDATION
+====================================================== */
+(function validatePath() {
+  const path = window.location.pathname;
+  const page = path.substring(path.lastIndexOf('/') + 1);
+  
+  const allowedPages = [
+    "",
+    "index.html",
+    "login.html",
+    "admin.html",
+    "manage-users.html",
+    "add-user.html",
+    "analytics.html",
+    "claim.html",
+    "status.html",
+    "404.html"
+  ];
+
+  if (!allowedPages.includes(page)) {
+    window.location.replace("404.html");
+  }
+})();
+
 const Utils = {
   getDecodedRole: () => {
     const r = localStorage.getItem("role");

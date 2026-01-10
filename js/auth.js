@@ -129,6 +129,8 @@ function checkSession() {
       localStorage.clear();
       if (!window.location.href.includes("login.html") && !window.location.href.includes("index.html")) {
         alert("Session expired. Please login again.", "error");
+        
+        // Determine correct path to login based on current location
         setTimeout(() => (window.location.href = "login.html"), 2000);
       }
     } else { localStorage.setItem("loginTime", Date.now()); }

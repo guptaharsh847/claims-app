@@ -66,17 +66,12 @@
     </div>
   </div>
 
-
-
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
   <script>
-    const storedRole = localStorage.getItem("role");
+    const role = Utils.getDecodedRole();
     const authBtn = document.getElementById("auth-btn");
     
-    // Decode Role
-    let role = null;
-    if (storedRole === "X9fK2pL5mQ8jR3t") role = "ADMIN";
-    else if (storedRole === "B2vN9kM4lP7oJ5h") role = "USER";
-
     if (role === "ADMIN") {
       authBtn.href = "admin.html";
       authBtn.innerHTML = `
