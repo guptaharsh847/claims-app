@@ -1,4 +1,4 @@
-const CACHE_NAME = "claims-portal-v1";
+const CACHE_NAME = "claims-portal-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,9 @@ const ASSETS = [
   "./js/api.js",
   "./js/config.js",
   "./js/auth.js",
-  "https://cdn.tailwindcss.com"
+  "https://cdn.tailwindcss.com",
+  "./images/icon-192.png",
+  "./images/icon-512.png"
 ];
 
 self.addEventListener("install", (e) => {

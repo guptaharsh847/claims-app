@@ -112,6 +112,15 @@ const Utils = {
     const day = parseInt(dateStr.substring(6, 8), 10);
     return new Date(year, month, day);
   },
+
+  installPWA: async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    const btn = document.getElementById("btn-install");
+    if (btn) btn.classList.add("hidden");
+  },
 };
 
 /* UI Helpers */
@@ -213,3 +222,12 @@ if ("serviceWorker" in navigator) {
       .catch((err) => console.log("Service Worker Failed", err));
   });
 }
+
+/* PWA Install Prompt Listener */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById("btn-install");
+  if (btn) btn.classList.remove("hidden");
+});
