@@ -413,3 +413,42 @@ if (document.getElementById("users-table-body")) {
   loadUsers();
   applyDashboardPermissions();
 }
+
+async function verifyPageAccess() {
+  const path = window.location.pathname;
+  let requiredPerm = null;
+
+  if (path.includes("add-user")) requiredPerm = "canAddUser";
+  else if (path.includes("manage-users")) requiredPerm = "canManageUser";
+  else if (path.includes("analytics")) requiredPerm = "canViewAnalytics";
+
+  const revealPage = () => {
+    const hider = document.getElementById("page-hider");
+    if (hider) hider.remove();
+  };
+
+  if (!requiredPerm) { revealPage(); return; }
+
+  const userMobile = localStorage.getItem("userMobile");
+  if (!userMobile) { window.location.href = "login.html"; return; }
+
+  try {
+    const response = await Api.get({ action: "getUsers" });
+    const users = Array.isArray(response) ? response : (response.users || []);
+    const currentUser = users.find(u => u.mobile === userMobile);
+
+    if (!currentUser) { window.location.href = "404.html"; return; }
+
+    const p = currentUser.permissions || currentUser;
+    const hasAccess = p[requiredPerm] === true || p[requiredPerm] === "TRUE";
+
+    if (!hasAccess) { window.location.href = "404.html"; }
+    else { revealPage(); }
+
+  } catch (err) {
+    console.error("Access verification failed", err);
+    window.location.href = "404.html";
+  }
+}
+
+verifyPageAccess();
