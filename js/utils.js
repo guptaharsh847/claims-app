@@ -204,3 +204,12 @@ function closeReceiptModal() {
   const overlay = document.getElementById("receipt-modal");
   if (overlay) { overlay.classList.add("opacity-0"); overlay.querySelector("div").classList.add("scale-95"); setTimeout(() => overlay.remove(), 200); }
 }
+
+/* PWA Service Worker Registration */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch((err) => console.log("Service Worker Failed", err));
+  });
+}
