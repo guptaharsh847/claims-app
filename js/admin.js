@@ -70,14 +70,17 @@ function renderAdminClaims(claims, page = 1) {
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between"><div><p class="text-sm font-medium text-slate-500 mb-1">Reimbursed (${monthName})</p><h3 class="text-3xl font-bold text-slate-800">₹${totalReimbursedAmount.toLocaleString()}</h3><p class="text-xs text-slate-400 mt-1">Processed this month</p></div><div class="p-3 bg-green-50 rounded-xl text-green-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>`;
   }
 
-  let html = `<table class="min-w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200"><tr>
+  let desktopHtml = `<div class="hidden md:block overflow-x-auto"><table class="min-w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200"><tr>
             <th class="px-4 py-3 font-semibold w-12"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"></th>
             <th class="px-4 py-3 font-semibold cursor-pointer hover:text-indigo-600 transition-colors whitespace-nowrap" onclick="sortAdminClaims('claimId')">Claim ID <span class="text-xs ml-1">${State.admin.sort.field === "claimId" ? (State.admin.sort.direction === "asc" ? "↑" : "↓") : ""}</span></th>
             <th class="px-4 py-3 font-semibold whitespace-nowrap">Email</th><th class="px-4 py-3 font-semibold whitespace-nowrap">Amount</th><th class="px-4 py-3 font-semibold whitespace-nowrap">Current Status</th><th class="px-4 py-3 font-semibold whitespace-nowrap">Update Status</th><th class="px-4 py-3 font-semibold text-center whitespace-nowrap">Receipt</th><th class="px-4 py-3 font-semibold text-center whitespace-nowrap">SLA</th><th class="px-4 py-3 font-semibold text-center whitespace-nowrap">WhatsApp</th></tr></thead><tbody class="divide-y divide-slate-100">`;
 
+  let mobileHtml = `<div class="md:hidden space-y-4 p-4 bg-slate-50">`;
+
   paginatedClaims.forEach((c) => {
     const statusInfo = Utils.getStatusInfo(c.status);
-    html += `<tr class="hover:bg-slate-50 transition-colors">
+    // Desktop Row
+    desktopHtml += `<tr class="hover:bg-slate-50 transition-colors">
           <td class="px-4 py-3 text-center"><input type="checkbox" class="claim-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" value="${c.claimId}" data-status="${c.status}"></td>
           <td class="px-4 py-3 whitespace-nowrap"><div class="flex items-center gap-2">${c.claimId}<button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
           <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${c.email}</td><td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">₹${c.amount}</td>
@@ -86,17 +89,49 @@ function renderAdminClaims(claims, page = 1) {
           <td class="px-4 py-3 text-center whitespace-nowrap">${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>` : `<span class="text-slate-400 italic">No receipt</span>`}</td>
           <td class="px-4 py-3 text-center whitespace-nowrap">${(c.status === "Submitted" || c.status === "Approved") ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : "Done"}</td>
           <td class="px-4 py-3 text-center whitespace-nowrap"><button ${(c.status === "Reimbursed" || c.status === "Declined") ? "disabled" : `onclick='openWhatsAppModal(${JSON.stringify(c).replace(/'/g, "&apos;")})'`} class="${(c.status === "Reimbursed" || c.status === "Declined") ? "text-slate-300 cursor-not-allowed" : "text-green-600 hover:text-green-800"} text-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></button></td></tr>`;
+
+    // Mobile Card
+    mobileHtml += `
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center gap-2">
+             <input type="checkbox" class="claim-checkbox rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-5 h-5" value="${c.claimId}" data-status="${c.status}">
+             <div>
+                <div class="font-bold text-slate-800 text-sm flex items-center gap-2">${c.claimId} <button onclick="copyClaimId('${c.claimId}')" class="text-slate-400 active:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div>
+                <div class="text-xs text-slate-500">${c.email}</div>
+             </div>
+          </div>
+          <span class="${statusInfo.class} px-2 py-1 rounded-full text-xs font-medium">${c.status}</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 mt-1">
+           <div>
+             <div class="text-xs text-slate-400">Amount</div>
+             <div class="text-lg font-bold text-slate-900">₹${c.amount}</div>
+           </div>
+           <div class="flex justify-end items-center gap-2">
+              ${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 bg-indigo-50 p-2 rounded-lg"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>` : ''}
+              <button ${(c.status === "Reimbursed" || c.status === "Declined") ? "disabled" : `onclick='openWhatsAppModal(${JSON.stringify(c).replace(/'/g, "&apos;")})'`} class="${(c.status === "Reimbursed" || c.status === "Declined") ? "text-slate-300 bg-slate-100" : "text-green-600 bg-green-50"} p-2 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></button>
+           </div>
+        </div>
+        
+        <div class="mt-2">
+           ${(c.status === "Declined" || c.status === "Reimbursed") ? `<div class="text-xs text-slate-400 text-center bg-slate-50 p-2 rounded">Status locked</div>` : `<select class="w-full border border-slate-300 p-2 rounded-lg text-slate-700 text-sm bg-white" onchange="updateStatus('${c.claimId}', this.value)"><option value="">Update Status...</option><option value="Submitted">Submitted</option><option value="Approved">Approved</option><option value="Declined">Declined</option><option value="Reimbursed">Reimbursed</option></select>`}
+        </div>
+      </div>
+    `;
   });
-  html += "</tbody></table>";
-  claimsDiv.innerHTML = html;
+  desktopHtml += "</tbody></table></div>";
+  mobileHtml += "</div>";
+  claimsDiv.innerHTML = desktopHtml + mobileHtml;
 
   if (paginationDiv) {
     if (totalPages > 1) {
-      paginationDiv.innerHTML = `<div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
-            <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+      paginationDiv.innerHTML = `<div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50 rounded-b-xl">
+            <span class="text-xs md:text-sm text-slate-500">Page ${page} of ${totalPages}</span>
             <div class="flex gap-2">
-              <button onclick="renderAdminClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-              <button onclick="renderAdminClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+              <button onclick="renderAdminClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Previous</button>
+              <button onclick="renderAdminClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Next</button>
             </div></div>`;
     } else { paginationDiv.innerHTML = ""; }
   }
@@ -202,7 +237,9 @@ function renderUsers(page = 1) {
   const paginatedUsers = users.slice(start, end);
   const totalPages = Math.ceil(users.length / CONFIG.PAGINATION.USERS);
 
-  let html = "";
+  let desktopHtml = "";
+  let mobileHtml = `<div class="md:hidden space-y-4 p-4 bg-slate-50">`;
+
   paginatedUsers.forEach((u) => {
     const statusClass = u.status === "ACTIVE" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100";
     
@@ -213,7 +250,8 @@ function renderUsers(page = 1) {
     const canManage = (p.canManageUser === true || p.canManageUser === "TRUE") ? "checked" : "";
     const canAnalytics = (p.canViewAnalytics === true || p.canViewAnalytics === "TRUE") ? "checked" : "";
 
-    html += `<tr class="hover:bg-slate-50 transition-colors">
+    // Desktop Row
+    desktopHtml += `<tr class="hover:bg-slate-50 transition-colors">
           <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">${u.name}</td>
           <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.mobile}</td>
           <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.email}</td>
@@ -226,15 +264,47 @@ function renderUsers(page = 1) {
             <button onclick="saveUserPermissions('${u.mobile}', this)" class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium text-xs px-3 py-1 rounded transition shadow-sm">Save</button>
             <button onclick="toggleUser('${u.mobile}', '${u.status}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">${u.status === "ACTIVE" ? "Disable" : "Enable"}</button>
           </td></tr>`;
+
+    // Mobile Card
+    mobileHtml += `
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="font-bold text-slate-800">${u.name}</div>
+            <div class="text-xs text-slate-500">${u.mobile}</div>
+            <div class="text-xs text-slate-500">${u.email}</div>
+          </div>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium ${statusClass}">${u.status}</span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 items-center border-t border-slate-50 pt-3">
+           <select onchange="changeRole('${u.mobile}', this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded p-2 w-full"><option value="USER" ${u.role === "USER" ? "selected" : ""}>USER</option><option value="ADMIN" ${u.role === "ADMIN" ? "selected" : ""}>ADMIN</option></select>
+           <button onclick="toggleUser('${u.mobile}', '${u.status}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded transition w-full text-center">${u.status === "ACTIVE" ? "Disable Account" : "Enable Account"}</button>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-lg">
+           <div class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Permissions</div>
+           <div class="flex flex-wrap gap-4">
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${u.mobile}" data-type="canAddUser" ${canAdd}> Add User</label>
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${u.mobile}" data-type="canManageUser" ${canManage}> Manage</label>
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${u.mobile}" data-type="canViewAnalytics" ${canAnalytics}> Analytics</label>
+           </div>
+           <button onclick="saveUserPermissions('${u.mobile}', this)" class="mt-3 w-full text-white bg-indigo-600 hover:bg-indigo-700 font-medium text-xs px-3 py-2 rounded transition shadow-sm">Save Permissions</button>
+        </div>
+      </div>
+    `;
   });
-  tbody.innerHTML = html;
+  tbody.innerHTML = desktopHtml;
+  const mobileContainer = document.getElementById("users-mobile-view");
+  if (mobileContainer) mobileContainer.innerHTML = mobileHtml + "</div>";
+
   if (paginationDiv) {
     if (totalPages > 1) {
-      paginationDiv.innerHTML = `<div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100">
-          <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, users.length)} of ${users.length} users</span>
+      paginationDiv.innerHTML = `<div class="flex justify-between items-center px-6 py-4 bg-slate-50 border-t border-slate-100 rounded-b-xl">
+          <span class="text-xs md:text-sm text-slate-500">Page ${page} of ${totalPages}</span>
           <div class="flex gap-2">
-            <button onclick="renderUsers(${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-            <button onclick="renderUsers(${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+            <button onclick="renderUsers(${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Previous</button>
+            <button onclick="renderUsers(${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Next</button>
           </div></div>`;
     } else { paginationDiv.innerHTML = ""; }
   }

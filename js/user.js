@@ -105,14 +105,17 @@ function renderClaims(claims, page = 1) {
   const paginatedClaims = claims.slice(start, end);
   const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
-  let html = `<table class="min-w-full border text-sm bg-white"><thead class="bg-slate-100"><tr>
+  let desktopHtml = `<div class="hidden md:block overflow-x-auto"><table class="min-w-full border text-sm bg-white"><thead class="bg-slate-100"><tr>
           <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('claimId')">Claim ID <span class="text-xs ml-1">${State.user.sort.field === "claimId" ? (State.user.sort.direction === "asc" ? "↑" : "↓") : ""}</span></th>
           <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('date')">Date <span class="text-xs ml-1">${State.user.sort.field === "date" ? (State.user.sort.direction === "asc" ? "↑" : "↓") : ""}</span></th>
           <th class="border p-2">Email</th><th class="border p-2">Amount</th><th class="border p-2">Status</th><th class="border p-2">Receipt</th><th class="border p-2">SLA</th></tr></thead><tbody>`;
 
+  let mobileHtml = `<div class="md:hidden space-y-4">`;
+
   paginatedClaims.forEach((c) => {
     const statusInfo = Utils.getStatusInfo(c.status);
-    html += `<tr class="hover:bg-slate-50">
+    // Desktop Row
+    desktopHtml += `<tr class="hover:bg-slate-50">
         <td class="border p-2"><div class="flex items-center gap-2">${c.claimId}<button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
         <td class="border p-2 text-slate-600">${new Date(c.timestamp).toLocaleDateString()}</td>
         <td class="border p-2 text-slate-600">${c.email}</td>
@@ -120,18 +123,48 @@ function renderClaims(claims, page = 1) {
         <td class="border p-2"><span title="${statusInfo.tooltip}" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}">${c.status}</span></td>
         <td class="border p-2 text-center">${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>` : `<span class="text-slate-400 italic">No receipt</span>`}</td>
         <td class="border p-2 text-center">${c.status === "Submitted" || c.status === "Approved" ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : "-"}</td></tr>`;
+
+    // Mobile Card
+    mobileHtml += `
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden transition-all active:scale-[0.99]">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-slate-800 text-sm">${c.claimId}</span>
+              <button onclick="copyClaimId('${c.claimId}')" class="text-slate-400 active:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
+            </div>
+            <div class="text-xs text-slate-500 mt-0.5">${new Date(c.timestamp).toLocaleDateString()}</div>
+          </div>
+          <span class="${statusInfo.class} px-2 py-1 rounded-full text-xs font-medium">${c.status}</span>
+        </div>
+        
+        <div class="flex justify-between items-end border-t border-slate-50 pt-3 mt-1">
+          <div>
+            <div class="text-xs text-slate-400 mb-0.5">Amount</div>
+            <div class="text-lg font-bold text-slate-900">₹${c.amount}</div>
+          </div>
+          <div class="flex gap-3 items-center">
+             ${c.status === "Submitted" || c.status === "Approved" ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : ''}
+             ${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg> Receipt</button>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
   });
-  html += "</tbody></table>";
+  desktopHtml += "</tbody></table></div>";
+  mobileHtml += "</div>";
+
+  output.innerHTML = desktopHtml + mobileHtml;
 
   if (totalPages > 1) {
-    html += `<div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50">
-        <span class="text-sm text-slate-500">Showing ${start + 1} to ${Math.min(end, claims.length)} of ${claims.length} results</span>
+    const paginationHtml = `<div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50 mt-4 rounded-b-xl">
+        <span class="text-xs md:text-sm text-slate-500">Page ${page} of ${totalPages}</span>
         <div class="flex gap-2">
-          <button onclick="renderClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Previous</button>
-          <button onclick="renderClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1 border border-slate-300 rounded bg-white text-sm"' : 'class="px-3 py-1 border border-slate-300 rounded bg-white hover:bg-slate-50 text-indigo-600 text-sm transition"'} >Next</button>
+          <button onclick="renderClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Previous</button>
+          <button onclick="renderClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Next</button>
         </div></div>`;
+    output.insertAdjacentHTML('beforeend', paginationHtml);
   }
-  output.innerHTML = html;
   output.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 

@@ -5,6 +5,7 @@
   <title>My Claims - Claims Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="theme-color" content="#4f46e5">
 </head>
 
 <body class="bg-slate-50 min-h-screen p-4 md:p-8">
@@ -39,7 +40,7 @@
       <div class="flex flex-col md:flex-row gap-4 justify-between items-center">
         
         <!-- Search -->
-        <div class="w-full md:w-1/2 flex gap-2">
+        <div class="w-full md:w-1/2 flex flex-col sm:flex-row gap-2">
           <div class="relative flex-1">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -49,7 +50,7 @@
             <input id="searchValue" type="text" placeholder="Search by Email or Claim ID..." 
               class="pl-10 w-full border border-slate-300 rounded-lg py-2.5 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm">
           </div>
-          <button onclick="searchClaim()" class="bg-slate-800 text-white px-6 py-2.5 rounded-lg hover:bg-slate-900 transition font-medium text-sm shadow-sm">
+          <button onclick="searchClaim()" class="bg-slate-800 text-white px-6 py-2.5 rounded-lg hover:bg-slate-900 transition font-medium text-sm shadow-sm active:scale-95">
             Search
           </button>
         </div>
@@ -88,7 +89,7 @@
 
     <!-- Output Table -->
     <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden min-h-[300px]">
-      <div id="output" class="overflow-x-auto">
+      <div id="output">
         <!-- JS renders here -->
         <div class="flex flex-col items-center justify-center py-16 text-center">
           <div class="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6">
