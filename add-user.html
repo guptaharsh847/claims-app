@@ -8,7 +8,8 @@
   <script>
     // Redirect to login if not authenticated as ADMIN
     // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
-    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
+    const role = localStorage.getItem("role");
+    if (role !== "X9fK2pL5mQ8jR3t" && role !== "ADMIN") {
       window.location.replace("login.html");
     }
   </script>
@@ -63,6 +64,24 @@
               <option value="ADMIN">ADMIN</option>
             </select>
             <p class="text-xs text-slate-500 mt-1">Admins have full access to manage claims and users.</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">Permissions</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="u-canAddUser" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                <span class="text-sm text-slate-700">Add User</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="u-canManageUser" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                <span class="text-sm text-slate-700">Manage User</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="u-canViewAnalytics" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
+                <span class="text-sm text-slate-700">View Analytics</span>
+              </label>
+            </div>
           </div>
 
           <div class="pt-4">

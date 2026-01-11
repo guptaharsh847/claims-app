@@ -44,13 +44,10 @@
       </div>
     </div>
     
-    <!-- Manage Users Panel -->
-    <div id="manage-users" class="hidden mb-8"></div>
-
     <!-- Admin Tools / Navigation -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <!-- Analytics Module -->
-      <a href="analytics.html" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group flex items-center gap-4">
+      <a href="analytics.html" id="module-analytics" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group flex items-center gap-4">
         <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:scale-110 transition-transform">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -63,7 +60,7 @@
       </a>
 
       <!-- Manage Users Module -->
-      <button onclick="openManageUsers()" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group flex items-center gap-4 text-left w-full">
+      <a href="manage-users.html" id="module-manage-users" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition group flex items-center gap-4 text-left w-full">
         <div class="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-110 transition-transform">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -73,7 +70,7 @@
           <h3 class="font-bold text-slate-800">Manage Users</h3>
           <p class="text-xs text-slate-500">Add or edit users</p>
         </div>
-      </button>
+      </a>
     </div>
 
     <!-- Analytics Overview -->

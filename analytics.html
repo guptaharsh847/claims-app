@@ -7,7 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
+    const role = localStorage.getItem("role");
+    if (role !== "X9fK2pL5mQ8jR3t" && role !== "ADMIN") {
       window.location.replace("login.html");
     }
   </script>

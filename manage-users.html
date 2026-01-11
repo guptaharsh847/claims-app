@@ -8,7 +8,8 @@
   <script>
     // Redirect to login if not authenticated as ADMIN
     // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
-    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
+    const role = localStorage.getItem("role");
+    if (role !== "X9fK2pL5mQ8jR3t" && role !== "ADMIN") {
       window.location.replace("login.html");
     }
   </script>
@@ -24,7 +25,7 @@
         <p class="text-slate-500 mt-1">View and manage system users</p>
       </div>
       <div class="flex gap-4">
-        <a href="add-user.html" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium flex items-center">
+        <a href="add-user.html" id="btn-add-new-user" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -47,12 +48,15 @@
               <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">Email</th>
               <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">Role</th>
               <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">Status</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap text-center">Add User</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap text-center">Manage User</th>
+              <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap text-center">Analytics</th>
               <th class="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody id="users-table-body" class="divide-y divide-slate-100">
             <tr>
-              <td colspan="6" class="px-6 py-12 text-center">
+              <td colspan="9" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center justify-center">
                   <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-100 border-t-indigo-600 mb-4"></div>
                   <p class="text-slate-500 font-medium animate-pulse">Loading users...</p>

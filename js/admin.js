@@ -181,10 +181,11 @@ async function loadUsers() {
   const tbody = document.getElementById("users-table-body");
   if (!tbody) return;
   try {
-    const users = await Api.get({ action: "getUsers" });
-    State.users.list = users || [];
+    const response = await Api.get({ action: "getUsers" });
+    // Handle if response is array or object wrapper
+    State.users.list = Array.isArray(response) ? response : (response.users || []);
     renderUsers(1);
-  } catch (err) { tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>'; }
+  } catch (err) { tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-8 text-center text-red-500">Error loading users.</td></tr>'; }
 }
 
 function renderUsers(page = 1) {
@@ -192,7 +193,7 @@ function renderUsers(page = 1) {
   const paginationDiv = document.getElementById("users-pagination");
   const users = State.users.list;
   if (!users || users.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="px-6 py-8 text-center text-slate-500">No users found.</td></tr>';
     if (paginationDiv) paginationDiv.innerHTML = "";
     return;
   }
@@ -200,14 +201,31 @@ function renderUsers(page = 1) {
   const end = start + CONFIG.PAGINATION.USERS;
   const paginatedUsers = users.slice(start, end);
   const totalPages = Math.ceil(users.length / CONFIG.PAGINATION.USERS);
+
   let html = "";
   paginatedUsers.forEach((u) => {
     const statusClass = u.status === "ACTIVE" ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100";
+    
+    // Permissions Logic
+    // Robust check: handles if permissions are in a nested object OR flat properties
+    const p = u.permissions || u;
+    const canAdd = (p.canAddUser === true || p.canAddUser === "TRUE") ? "checked" : "";
+    const canManage = (p.canManageUser === true || p.canManageUser === "TRUE") ? "checked" : "";
+    const canAnalytics = (p.canViewAnalytics === true || p.canViewAnalytics === "TRUE") ? "checked" : "";
+
     html += `<tr class="hover:bg-slate-50 transition-colors">
-          <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">${u.name}</td><td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.mobile}</td><td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.email}</td>
+          <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">${u.name}</td>
+          <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.mobile}</td>
+          <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${u.email}</td>
           <td class="px-4 py-3 whitespace-nowrap"><select onchange="changeRole('${u.mobile}', this.value)" class="bg-white border border-slate-300 text-slate-700 text-xs rounded focus:ring-indigo-500 focus:border-indigo-500 block p-1.5"><option value="USER" ${u.role === "USER" ? "selected" : ""}>USER</option><option value="ADMIN" ${u.role === "ADMIN" ? "selected" : ""}>ADMIN</option></select></td>
           <td class="px-4 py-3 whitespace-nowrap"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">${u.status}</span></td>
-          <td class="px-4 py-3 whitespace-nowrap"><button onclick="toggleUser('${u.mobile}', '${u.status}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">${u.status === "ACTIVE" ? "Disable" : "Enable"}</button></td></tr>`;
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${u.mobile}" data-type="canAddUser" ${canAdd}></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${u.mobile}" data-type="canManageUser" ${canManage}></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${u.mobile}" data-type="canViewAnalytics" ${canAnalytics}></td>
+          <td class="px-4 py-3 whitespace-nowrap flex items-center gap-2">
+            <button onclick="saveUserPermissions('${u.mobile}', this)" class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium text-xs px-3 py-1 rounded transition shadow-sm">Save</button>
+            <button onclick="toggleUser('${u.mobile}', '${u.status}')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">${u.status === "ACTIVE" ? "Disable" : "Enable"}</button>
+          </td></tr>`;
   });
   tbody.innerHTML = html;
   if (paginationDiv) {
@@ -235,7 +253,17 @@ async function addUser() {
   }
 
   try {
-    const data = { action: "addUser", name: document.getElementById("u-name").value, mobile: document.getElementById("u-mobile").value, email: document.getElementById("u-email").value, password: document.getElementById("u-password").value, role: document.getElementById("u-role").value };
+    const data = { 
+      action: "addUser", 
+      name: document.getElementById("u-name").value, 
+      mobile: document.getElementById("u-mobile").value, 
+      email: document.getElementById("u-email").value, 
+      password: document.getElementById("u-password").value, 
+      role: document.getElementById("u-role").value,
+      canAddUser: document.getElementById("u-canAddUser")?.checked || false,
+      canViewAnalytics: document.getElementById("u-canViewAnalytics")?.checked || false,
+      canManageUser: document.getElementById("u-canManageUser")?.checked || false
+    };
     const result = await Api.post(data);
     if (result.status === "success") { alert("User added successfully"); setTimeout(() => (window.location.href = "manage-users.html"), 1000); }
     else { alert(result.message || "Error adding user", "error"); }
@@ -300,5 +328,88 @@ function exportToCSV() {
   window.URL.revokeObjectURL(url);
 }
 
-if (document.getElementById("claims")) loadClaims();
-if (document.getElementById("users-table-body")) loadUsers();
+async function saveUserPermissions(mobile, btn) {
+  const originalText = btn.innerText;
+  btn.innerText = "Saving...";
+  btn.disabled = true;
+
+  const checkboxes = document.querySelectorAll(`.perm-check[data-email="${mobile}"]`);
+  const perms = { canAddUser: false, canManageUser: false, canViewAnalytics: false };
+  
+  checkboxes.forEach(cb => {
+    perms[cb.dataset.type] = cb.checked;
+  });
+
+  try {
+    const res = await Api.post({ action: "updatePermissions", targetMobile: mobile, perms: perms });
+    if (res.result === "success") {
+      btn.innerText = "Saved!";
+      btn.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
+      btn.classList.add("bg-green-600", "hover:bg-green-700");
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        btn.classList.add("bg-indigo-600", "hover:bg-indigo-700");
+        btn.classList.remove("bg-green-600", "hover:bg-green-700");
+      }, 2000);
+    } else {
+      throw new Error(res.message || "Failed");
+    }
+  } catch (err) {
+    console.error(err);
+    btn.innerText = "Error";
+    btn.classList.add("bg-red-600");
+    setTimeout(() => {
+      btn.innerText = originalText;
+      btn.disabled = false;
+      btn.classList.remove("bg-red-600");
+    }, 2000);
+  }
+}
+
+
+async function applyDashboardPermissions() {
+  const userMobile = localStorage.getItem("userMobile");
+  if (!userMobile) return;
+
+  const analyticsModule = document.getElementById("module-analytics");
+  const manageModule = document.getElementById("module-manage-users");
+  const statsDiv = document.getElementById("admin-stats");
+  const addUserBtn = document.getElementById("btn-add-new-user");
+
+  // Hide immediately to prevent flickering (Flash of Unauthorized Content)
+  if (manageModule) manageModule.style.display = "none";
+  if (analyticsModule) analyticsModule.style.display = "none";
+  if (statsDiv) statsDiv.style.display = "none";
+  if (addUserBtn) addUserBtn.style.display = "none";
+
+  if (!analyticsModule && !manageModule && !statsDiv && !addUserBtn) return;
+
+  try {
+    const response = await Api.get({ action: "getUsers" });
+    const users = Array.isArray(response) ? response : (response.users || []);
+    const currentUser = users.find(u => u.mobile === userMobile);
+
+    if (currentUser) {
+      const p = currentUser.permissions || currentUser;
+      const canManage = p.canManageUser === true || p.canManageUser === "TRUE";
+      const canAnalytics = p.canViewAnalytics === true || p.canViewAnalytics === "TRUE";
+      const canAdd = p.canAddUser === true || p.canAddUser === "TRUE";
+
+      if (manageModule) manageModule.style.display = canManage ? "" : "none";
+      if (analyticsModule) analyticsModule.style.display = canAnalytics ? "" : "none";
+      if (statsDiv) statsDiv.style.display = canAnalytics ? "" : "none";
+      if (addUserBtn) addUserBtn.style.display = canAdd ? "" : "none";
+    }
+  } catch (err) { console.error("Error applying permissions", err); }
+}
+
+if (document.getElementById("claims")) {
+  applyDashboardPermissions();
+  loadClaims();
+}
+
+if (document.getElementById("users-table-body")) {
+  loadUsers();
+  applyDashboardPermissions();
+}
