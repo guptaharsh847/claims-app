@@ -17,52 +17,69 @@
   </script>
   <style id="page-hider">body { display: none; }</style>
 </head>
-<body class="bg-slate-50 min-h-screen p-6">
+<body class="bg-slate-50 h-screen overflow-hidden flex flex-col font-sans text-slate-900 antialiased">
 
-  <div class="max-w-2xl mx-auto">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-800">Add New User</h1>
-        <p class="text-slate-500 mt-1">Create a new account for the portal</p>
+  <!-- Navbar -->
+  <nav class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 flex-none">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <span class="font-bold text-lg text-slate-800 tracking-tight">Admin Portal</span>
       </div>
-      <a href="admin.html" class="text-slate-500 hover:text-indigo-600 font-medium transition flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-        </svg>
-        Back to Dashboard
-      </a>
+      <a href="manage-users.html" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Back to Users</a>
     </div>
+  </nav>
 
+  <main class="flex-1 overflow-y-auto p-4 sm:p-6">
+    <div class="max-w-2xl mx-auto">
     <!-- Form Card -->
-    <div class="bg-white rounded-xl shadow-lg border border-slate-100 overflow-hidden">
+    <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+      
+      <!-- Header -->
+      <div class="bg-gradient-to-br from-indigo-600 to-violet-600 p-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="white" stroke-width="1"/></pattern></defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+             </svg>
+        </div>
+        <div class="relative z-10">
+          <h2 class="text-2xl font-bold text-white">Add New User</h2>
+          <p class="text-indigo-100 text-sm mt-1">Create a new account for the portal</p>
+        </div>
+      </div>
+
       <div class="p-8">
         <div class="space-y-5">
           
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
-            <input id="u-name" type="text" placeholder="e.g. John Doe" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2.5">
+            <input id="u-name" type="text" placeholder="e.g. John Doe" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Mobile Number</label>
-              <input id="u-mobile" type="tel" placeholder="e.g. 9876543210" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2.5">
+              <input id="u-mobile" type="tel" placeholder="e.g. 9876543210" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
             </div>
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-              <input id="u-email" type="email" placeholder="e.g. john@example.com" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2.5">
+              <input id="u-email" type="email" placeholder="e.g. john@example.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
             </div>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input id="u-password" type="password" placeholder="Enter secure password" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2.5">
+            <input id="u-password" type="password" placeholder="Enter secure password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400">
           </div>
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1">Role</label>
-            <select id="u-role" class="w-full border-slate-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border p-2.5 bg-white">
+            <select id="u-role" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all bg-white">
               <option value="USER">USER</option>
               <option value="ADMIN">ADMIN</option>
             </select>
@@ -71,7 +88,7 @@
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-2">Permissions</label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" id="u-canAddUser" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4">
                 <span class="text-sm text-slate-700">Add User</span>
@@ -88,7 +105,7 @@
           </div>
 
           <div class="pt-4">
-            <button id="btn-add-user" onclick="addUser()" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition font-medium flex justify-center items-center">
+            <button id="btn-add-user" onclick="addUser()" class="w-full bg-indigo-600 text-white px-6 py-4 rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition font-semibold flex justify-center items-center active:scale-[0.98] hover:-translate-y-0.5">
               Create User Account
             </button>
           </div>
@@ -96,7 +113,8 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </main>
 
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
