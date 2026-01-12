@@ -9,24 +9,43 @@
   <link rel="manifest" href="manifest.json">
 </head>
 
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 h-screen overflow-hidden flex flex-col font-sans text-slate-900 antialiased">
 
-  <div class="bg-white rounded-2xl shadow-xl p-8 max-w-3xl w-full border border-slate-100">
-    
-    <!-- Header with Home Button -->
-    <div class="flex justify-between items-start mb-8 border-b border-slate-100 pb-6">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800">New Expense Claim</h2>
-        <p class="text-slate-500 text-sm mt-1">Fill in the details below to submit a request</p>
-      </div>
-      <a href="index.html" class="text-slate-500 hover:text-indigo-600 transition flex items-center gap-2 text-sm font-medium bg-slate-50 px-4 py-2 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-        </svg>
-        Home
+  <!-- Navbar -->
+  <nav class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 flex-none">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 group">
+        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200 group-hover:scale-105 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <span class="font-bold text-lg text-slate-800 tracking-tight">Claims Portal</span>
       </a>
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="text-slate-500 hover:text-indigo-600 transition p-2 rounded-lg hover:bg-slate-100" title="Go to Home">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </a>
+        <a href="status.html" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">My Claims</a>
+      </div>
     </div>
+  </nav>
 
+  <main class="flex-1 overflow-y-auto p-4 sm:p-6">
+    <div class="max-w-3xl mx-auto">
+      <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100 overflow-hidden">
+    
+      <!-- Header -->
+      <div class="bg-gradient-to-br from-indigo-600 to-violet-600 p-8 text-center relative overflow-hidden">
+        <div class="relative z-10">
+          <h2 class="text-2xl font-bold text-white">New Expense Claim</h2>
+          <p class="text-indigo-100 text-sm mt-1">Fill in the details below to submit a request</p>
+        </div>
+      </div>
+
+      <div class="p-8">
     <form id="claimForm" class="space-y-6">
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,21 +116,16 @@
       </div>
 
       <button type="submit"
-        class="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 active:scale-[0.98]">
+        class="w-full bg-indigo-600 text-white py-4 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 active:scale-[0.98] hover:-translate-y-0.5">
         Submit Claim
       </button>
-
-      <div class="text-center pt-2 border-t border-slate-100 mt-6">
-        <a href="status.html" class="inline-flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition">
-          View My Claims History
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-          </svg>
-        </a>
-      </div>
       
       <p id="result" class="text-center mt-2 text-sm font-medium"></p>
     </form>
+      </div>
+      </div>
+    </div>
+  </main>
   </div>
 
   <script src="js/config.js"></script>
