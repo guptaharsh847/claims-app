@@ -18,24 +18,13 @@
   <style id="page-hider">body { display: none; }</style>
  
 </head>
-<body class="bg-slate-50 h-screen overflow-hidden flex flex-col font-sans text-slate-900 antialiased">
+<body class="bg-slate-50 h-screen flex overflow-hidden font-sans text-slate-900 antialiased">
 
-  <!-- Navbar -->
-  <nav class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 flex-none">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-indigo-200">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-        </div>
-        <span class="font-bold text-lg text-slate-800 tracking-tight">Admin Portal</span>
-      </div>
-      <a href="admin.html" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Dashboard</a>
-    </div>
-  </nav>
+  <div id="sidebar-placeholder"></div>
 
-  <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div id="header-placeholder"></div>
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
     <div class="max-w-7xl mx-auto">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -52,12 +41,6 @@
           </div>
           <input type="text" id="userSearch" onkeyup="filterUsers()" placeholder="Search users..." class="pl-10 w-full sm:w-64 border border-slate-300 rounded-xl py-2.5 focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none transition-all text-sm shadow-sm">
         </div>
-        <a href="add-user.html" id="btn-add-new-user" class="bg-indigo-600 text-white hover:bg-indigo-700 px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-200 transition text-sm font-semibold flex items-center justify-center hover:-translate-y-0.5 active:translate-y-0">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Add New User
-        </a>
       </div>
     </div>
 
@@ -95,6 +78,7 @@
     </div>
     </div>
   </main>
+  </div>
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/api.js"></script>

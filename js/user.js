@@ -126,26 +126,29 @@ function renderClaims(claims, page = 1) {
 
     // Mobile Card
     mobileHtml += `
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-3 relative overflow-hidden transition-all active:scale-[0.99]">
-        <div class="flex justify-between items-start">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-slate-800 text-sm">${c.claimId}</span>
-              <button onclick="copyClaimId('${c.claimId}')" class="text-slate-400 active:text-indigo-600 p-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button>
-            </div>
-            <div class="text-xs text-slate-500 mt-0.5">${new Date(c.timestamp).toLocaleDateString()}</div>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-3 flex items-center justify-between cursor-pointer bg-slate-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
+          <div class="flex items-center gap-3">
+             <div class="font-bold text-slate-800 text-sm">${c.claimId}</div>
+             <div class="text-xs text-slate-500">${new Date(c.timestamp).toLocaleDateString()}</div>
           </div>
-          <span class="${statusInfo.class} px-2 py-1 rounded-full text-xs font-medium">${c.status}</span>
+          <div class="flex items-center gap-2">
+             <span class="${statusInfo.class} px-2 py-0.5 rounded-full text-[10px] font-medium">${c.status}</span>
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+          </div>
         </div>
         
-        <div class="flex justify-between items-end border-t border-slate-50 pt-3 mt-1">
-          <div>
-            <div class="text-xs text-slate-400 mb-0.5">Amount</div>
-            <div class="text-lg font-bold text-slate-900">₹${c.amount}</div>
+        <div class="hidden p-3 border-t border-slate-100 space-y-3">
+          <div class="flex justify-between items-center">
+             <div class="text-xs text-slate-400">Amount</div>
+             <div class="text-lg font-bold text-slate-900">₹${c.amount}</div>
           </div>
-          <div class="flex gap-3 items-center">
+          <div class="flex justify-between items-center">
+             <div class="text-xs text-slate-400">Actions</div>
+             <div class="flex gap-3 items-center">
              ${c.status === "Submitted" || c.status === "Approved" ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : ''}
              ${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg> Receipt</button>` : ''}
+             </div>
           </div>
         </div>
       </div>

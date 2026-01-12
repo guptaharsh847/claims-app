@@ -1,3 +1,115 @@
+const Layout = {
+  render: () => {
+    const path = window.location.pathname;
+    const page = path.split("/").pop() || "index.html";
+    
+    // Inject Sidebar
+    const sidebarPlaceholder = document.getElementById("sidebar-placeholder");
+    if (sidebarPlaceholder) {
+      sidebarPlaceholder.outerHTML = Layout.getSidebarHtml(page);
+    }
+
+    // Inject Header
+    const headerPlaceholder = document.getElementById("header-placeholder");
+    if (headerPlaceholder) {
+      const title = Layout.getPageTitle(page);
+      headerPlaceholder.outerHTML = Layout.getHeaderHtml(title);
+    }
+
+    // Inject Overlay
+    if (!document.getElementById("sidebar-overlay")) {
+      const overlay = document.createElement("div");
+      overlay.id = "sidebar-overlay";
+      overlay.className = "fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity opacity-0";
+      overlay.onclick = toggleSidebar;
+      document.body.prepend(overlay);
+    }
+  },
+
+  getSidebarHtml: (currentPage) => {
+    const links = [
+      { href: "admin.html", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z", label: "Dashboard" },
+      { href: "analytics.html", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", label: "Analytics" },
+      { href: "manage-users.html", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z", label: "Manage Users" },
+      { href: "add-user.html", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z", label: "Add User" }
+    ];
+
+    const navLinks = links.map(link => {
+      const isActive = currentPage === link.href;
+      const activeClass = isActive ? "bg-indigo-50 text-indigo-600" : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600";
+      return `
+        <a href="${link.href}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeClass} overflow-hidden whitespace-nowrap">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${link.icon}" /></svg>
+          <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">${link.label}</span>
+        </a>`;
+    }).join("");
+
+    return `
+      <aside id="sidebar" class="fixed md:relative z-50 w-64 md:w-20 md:hover:w-64 h-full bg-white border-r border-slate-200 transform -translate-x-full md:translate-x-0 transition-all duration-300 flex flex-col shadow-2xl md:shadow-none group">
+        <div class="h-16 flex items-center px-4 border-b border-slate-100 bg-white/50 backdrop-blur-sm overflow-hidden whitespace-nowrap">
+           <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-sm shadow-indigo-200 flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+           </div>
+           <span class="font-bold text-lg text-slate-800 tracking-tight ml-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">Admin Portal</span>
+        </div>
+        <nav class="flex-1 p-3 space-y-2 overflow-y-auto overflow-x-hidden">
+           ${navLinks}
+        </nav>
+        <div class="p-3 border-t border-slate-100 bg-slate-50/50 overflow-hidden whitespace-nowrap">
+           <a href="index.html" class="flex items-center gap-3 px-4 py-2 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors mb-1 rounded-lg hover:bg-slate-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+              <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">Home Page</span>
+           </a>
+           <button onclick="localStorage.removeItem('role'); localStorage.removeItem('userMobile'); localStorage.removeItem('loginTime'); window.location.href='index.html'" class="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+              <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">Logout</span>
+           </button>
+        </div>
+      </aside>`;
+  },
+
+  getHeaderHtml: (title) => {
+    return `
+     <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 z-30 flex-none">
+        <div class="flex items-center gap-3">
+           <button onclick="toggleSidebar()" class="md:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+           </button>
+           <h1 class="text-xl font-bold text-slate-800">${title}</h1>
+        </div>
+        <div class="flex items-center gap-2">
+           <button onclick="window.location.reload()" class="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title="Refresh Data">
+             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+           </button>
+        </div>
+     </header>`;
+  },
+  
+  getPageTitle: (page) => {
+    if (page.includes("admin")) return "Dashboard";
+    if (page.includes("analytics")) return "Analytics";
+    if (page.includes("manage-users")) return "Manage Users";
+    if (page.includes("add-user")) return "Add User";
+    return "Portal";
+  }
+};
+
+// Initialize Layout
+Layout.render();
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  
+  if (sidebar.classList.contains("-translate-x-full")) {
+    sidebar.classList.remove("-translate-x-full");
+    overlay.classList.remove("hidden", "opacity-0");
+  } else {
+    sidebar.classList.add("-translate-x-full");
+    overlay.classList.add("hidden", "opacity-0");
+  }
+}
+
 async function loadClaims() {
   const statusEl = document.getElementById("statusFilter");
   const status = statusEl ? statusEl.value : "";
@@ -75,9 +187,30 @@ function renderAdminClaims(claims, page = 1) {
 
   if (statsDiv) {
     statsDiv.innerHTML = `
-      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-indigo-100 flex items-start justify-between hover:-translate-y-1 transition-transform"><div><p class="text-sm font-medium text-slate-500 mb-1">Pending Approval</p><h3 class="text-3xl font-bold text-slate-800">${totalPending}</h3><p class="text-xs text-slate-400 mt-1">Claims waiting for action</p></div><div class="p-4 bg-indigo-50 rounded-2xl text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>
-      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-orange-100 flex items-start justify-between hover:-translate-y-1 transition-transform"><div><p class="text-sm font-medium text-slate-500 mb-1">Pending Amount</p><h3 class="text-3xl font-bold text-slate-800">₹${totalAmountPending.toLocaleString()}</h3><p class="text-xs text-slate-400 mt-1">Total value of pending claims</p></div><div class="p-4 bg-orange-50 rounded-2xl text-orange-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>
-      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-green-100 flex items-start justify-between hover:-translate-y-1 transition-transform"><div><p class="text-sm font-medium text-slate-500 mb-1">Reimbursed (${monthName})</p><h3 class="text-3xl font-bold text-slate-800">₹${totalReimbursedAmount.toLocaleString()}</h3><p class="text-xs text-slate-400 mt-1">Processed this month</p></div><div class="p-4 bg-green-50 rounded-2xl text-green-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>`;
+      <!-- Mobile: Compact Single Row -->
+      <div class="md:hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <div class="grid grid-cols-3 divide-x divide-slate-100">
+          <div class="text-center px-1">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pending</div>
+            <div class="text-lg font-bold text-slate-800">${totalPending}</div>
+          </div>
+          <div class="text-center px-1">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Amount</div>
+            <div class="text-lg font-bold text-indigo-600">₹${totalAmountPending.toLocaleString()}</div>
+          </div>
+          <div class="text-center px-1">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Paid</div>
+            <div class="text-lg font-bold text-green-600">₹${totalReimbursedAmount.toLocaleString()}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: 3 Cards Grid -->
+      <div class="hidden md:grid grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Pending</p><h3 class="text-2xl font-bold text-slate-800">${totalPending}</h3></div><div class="p-3 bg-indigo-50 rounded-xl text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Pending Amt</p><h3 class="text-2xl font-bold text-slate-800">₹${totalAmountPending.toLocaleString()}</h3></div><div class="p-3 bg-orange-50 rounded-xl text-orange-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Reimbursed</p><h3 class="text-2xl font-bold text-slate-800">₹${totalReimbursedAmount.toLocaleString()}</h3></div><div class="p-3 bg-green-50 rounded-xl text-green-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div></div>
+      </div>`;
   }
 
   let desktopHtml = `<div class="hidden md:block overflow-x-auto"><table class="min-w-full text-sm text-left"><thead class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200"><tr>
@@ -705,18 +838,18 @@ async function applyDashboardPermissions() {
   const userMobile = localStorage.getItem("userMobile");
   if (!userMobile) return;
 
-  const analyticsModule = document.getElementById("module-analytics");
-  const manageModule = document.getElementById("module-manage-users");
+  const analyticsLink = document.querySelector('a[href="analytics.html"]');
+  const manageLink = document.querySelector('a[href="manage-users.html"]');
+  const addUserLink = document.querySelector('a[href="add-user.html"]');
   const statsDiv = document.getElementById("admin-stats");
-  const addUserBtn = document.getElementById("btn-add-new-user");
 
   // Hide immediately to prevent flickering (Flash of Unauthorized Content)
-  if (manageModule) manageModule.style.display = "none";
-  if (analyticsModule) analyticsModule.style.display = "none";
+  if (manageLink) manageLink.style.display = "none";
+  if (analyticsLink) analyticsLink.style.display = "none";
+  if (addUserLink) addUserLink.style.display = "none";
   if (statsDiv) statsDiv.style.display = "none";
-  if (addUserBtn) addUserBtn.style.display = "none";
 
-  if (!analyticsModule && !manageModule && !statsDiv && !addUserBtn) return;
+  if (!analyticsLink && !manageLink && !statsDiv && !addUserLink) return;
 
   try {
     const response = await Api.get({ action: "getUsers" });
@@ -730,11 +863,10 @@ async function applyDashboardPermissions() {
         p.canViewAnalytics === true || p.canViewAnalytics === "TRUE";
       const canAdd = p.canAddUser === true || p.canAddUser === "TRUE";
 
-      if (manageModule) manageModule.style.display = canManage ? "" : "none";
-      if (analyticsModule)
-        analyticsModule.style.display = canAnalytics ? "" : "none";
+      if (manageLink) manageLink.style.display = canManage ? "flex" : "none";
+      if (analyticsLink) analyticsLink.style.display = canAnalytics ? "flex" : "none";
+      if (addUserLink) addUserLink.style.display = canAdd ? "flex" : "none";
       if (statsDiv) statsDiv.style.display = canAnalytics ? "" : "none";
-      if (addUserBtn) addUserBtn.style.display = canAdd ? "" : "none";
     }
   } catch (err) {
     console.error("Error applying permissions", err);
