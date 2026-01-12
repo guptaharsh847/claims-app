@@ -16,6 +16,15 @@
       {
         "button-name": "off"
       }
-    ]
+    ],
+    "compat-api/html": [
+      "default",
+      {
+        "ignore": [
+          "meta[name=theme-color]"
+        ]
+      }
+    ],
+    "apple-touch-icons": "off"
   }
 }

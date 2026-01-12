@@ -112,6 +112,15 @@ const Utils = {
     const day = parseInt(dateStr.substring(6, 8), 10);
     return new Date(year, month, day);
   },
+
+  installPWA: async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    const btn = document.getElementById("btn-install");
+    if (btn) btn.classList.add("hidden");
+  },
 };
 
 /* UI Helpers */
@@ -204,3 +213,21 @@ function closeReceiptModal() {
   const overlay = document.getElementById("receipt-modal");
   if (overlay) { overlay.classList.add("opacity-0"); overlay.querySelector("div").classList.add("scale-95"); setTimeout(() => overlay.remove(), 200); }
 }
+
+/* PWA Service Worker Registration */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("Service Worker Registered"))
+      .catch((err) => console.log("Service Worker Failed", err));
+  });
+}
+
+/* PWA Install Prompt Listener */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById("btn-install");
+  if (btn) btn.classList.remove("hidden");
+});
