@@ -238,9 +238,10 @@ function renderAdminClaims(claims, page = 1) {
           }<button onclick="copyClaimId('${
       c.claimId
     }')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
-          <td class="px-4 py-3 text-slate-600 whitespace-nowrap">${
-            c.email
-          }</td><td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">₹${
+          <td class="px-4 py-3 text-slate-600 whitespace-nowrap">
+            <div>${c.email}</div>
+            ${c.upiId ? `<div class="text-xs text-slate-400 mt-0.5">UPI: ${c.upiId}</div>` : ''}
+          </td><td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">₹${
       c.amount
     }</td>
           <td class="px-4 py-3 font-medium whitespace-nowrap"><span class="px-2 py-1 rounded-full text-xs ${
@@ -291,6 +292,7 @@ function renderAdminClaims(claims, page = 1) {
       c.claimId
     }')" class="text-slate-400 active:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div>
                 <div class="text-xs text-slate-500">${c.email}</div>
+                ${c.upiId ? `<div class="text-xs text-slate-400">UPI: ${c.upiId}</div>` : ''}
              </div>
           </div>
           <span class="${
@@ -480,7 +482,7 @@ function buildWhatsAppMessage(claim) {
     claim.email || "N/A"
   }\nDepartment : ${claim.department || "N/A"}\nAmount     : ₹${
     claim.amount
-  }\nDescription: ${claim.description || "N/A"}\nReceipt    : ${
+  }\nUPI ID: ${claim.upiId || "N/A"}\nDescription: ${claim.description || "N/A"}\nReceipt    : ${
     claim.receiptUrl || "Not Uploaded"
   }\n\nYour Servant`;
 }
@@ -517,6 +519,12 @@ function renderUsers(page = 1, searchTerm = "") {
   const tbody = document.getElementById("users-table-body");
   const paginationDiv = document.getElementById("users-pagination");
   let users = State.users.list;
+
+  // Filter out current logged-in user to prevent self-management
+  const currentUserMobile = localStorage.getItem("userMobile");
+  if (currentUserMobile) {
+    users = users.filter((u) => String(u.mobile) !== String(currentUserMobile));
+  }
 
   if (searchTerm) {
     users = users.filter(
