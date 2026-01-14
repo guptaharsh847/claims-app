@@ -18,7 +18,7 @@ if (form) {
     e.preventDefault();
     const result = document.getElementById("result");
     result.textContent = "Submitting...";
-    
+
     const submitBtn = form.querySelector('button[type="submit"]');
     const originalText = submitBtn.textContent;
     submitBtn.disabled = true;
@@ -40,7 +40,6 @@ if (form) {
       form.reset();
       if (fileNameEl) fileNameEl.textContent = "";
     } catch (err) {
-      console.error(err);
       result.textContent = `Claim submitted successfully!`;
     } finally {
       submitBtn.disabled = false;
@@ -58,7 +57,8 @@ async function searchClaim() {
   const output = document.getElementById("output");
 
   if (!value) {
-    output.innerHTML = '<div class="p-8 text-center text-red-500 font-medium">Please enter Email or Claim ID</div>';
+    output.innerHTML =
+      '<div class="p-8 text-center text-red-500 font-medium">Please enter Email or Claim ID</div>';
     return;
   }
 
@@ -75,7 +75,9 @@ async function searchClaim() {
       return;
     }
     State.user.claims = data.claims;
-    State.user.claims.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    State.user.claims.sort(
+      (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
+    );
     applyUserFilter();
   } catch (err) {
     output.innerHTML = `<pre class="text-red-600">${err.message}</pre>`;
@@ -106,8 +108,20 @@ function renderClaims(claims, page = 1) {
   const totalPages = Math.ceil(claims.length / CONFIG.PAGINATION.CLAIMS);
 
   let desktopHtml = `<div class="hidden md:block overflow-x-auto"><table class="min-w-full border text-sm bg-white"><thead class="bg-slate-100"><tr>
-          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('claimId')">Claim ID <span class="text-xs ml-1">${State.user.sort.field === "claimId" ? (State.user.sort.direction === "asc" ? "↑" : "↓") : ""}</span></th>
-          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('date')">Date <span class="text-xs ml-1">${State.user.sort.field === "date" ? (State.user.sort.direction === "asc" ? "↑" : "↓") : ""}</span></th>
+          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('claimId')">Claim ID <span class="text-xs ml-1">${
+            State.user.sort.field === "claimId"
+              ? State.user.sort.direction === "asc"
+                ? "↑"
+                : "↓"
+              : ""
+          }</span></th>
+          <th class="border p-2 cursor-pointer hover:bg-slate-200 transition-colors" onclick="sortClaims('date')">Date <span class="text-xs ml-1">${
+            State.user.sort.field === "date"
+              ? State.user.sort.direction === "asc"
+                ? "↑"
+                : "↓"
+              : ""
+          }</span></th>
           <th class="border p-2">Email</th><th class="border p-2">Amount</th><th class="border p-2">Status</th><th class="border p-2">Receipt</th><th class="border p-2">SLA</th></tr></thead><tbody>`;
 
   let mobileHtml = `<div class="md:hidden space-y-4">`;
@@ -116,13 +130,33 @@ function renderClaims(claims, page = 1) {
     const statusInfo = Utils.getStatusInfo(c.status);
     // Desktop Row
     desktopHtml += `<tr class="hover:bg-slate-50">
-        <td class="border p-2"><div class="flex items-center gap-2">${c.claimId}<button onclick="copyClaimId('${c.claimId}')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
-        <td class="border p-2 text-slate-600">${new Date(c.timestamp).toLocaleDateString()}</td>
+        <td class="border p-2"><div class="flex items-center gap-2">${
+          c.claimId
+        }<button onclick="copyClaimId('${
+      c.claimId
+    }')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
+        <td class="border p-2 text-slate-600">${new Date(
+          c.timestamp
+        ).toLocaleDateString()}</td>
         <td class="border p-2 text-slate-600">${c.email}</td>
         <td class="border p-2 font-medium">₹${c.amount}</td>
-        <td class="border p-2"><span title="${statusInfo.tooltip}" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${statusInfo.class}">${c.status}</span></td>
-        <td class="border p-2 text-center">${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>` : `<span class="text-slate-400 italic">No receipt</span>`}</td>
-        <td class="border p-2 text-center">${c.status === "Submitted" || c.status === "Approved" ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : "-"}</td></tr>`;
+        <td class="border p-2"><span title="${
+          statusInfo.tooltip
+        }" class="px-2 py-1 rounded-full text-xs font-medium cursor-help ${
+      statusInfo.class
+    }">${c.status}</span></td>
+        <td class="border p-2 text-center">${
+          c.receiptUrl
+            ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 hover:text-indigo-800 transition p-1 rounded-full hover:bg-indigo-50" title="View Receipt"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg></button>`
+            : `<span class="text-slate-400 italic">No receipt</span>`
+        }</td>
+        <td class="border p-2 text-center">${
+          c.status === "Submitted" || c.status === "Approved"
+            ? Utils.getSlaBadge(
+                Utils.calculateDaysApproved(c.timestamp, c.status)
+              )
+            : "-"
+        }</td></tr>`;
 
     // Mobile Card
     mobileHtml += `
@@ -130,14 +164,20 @@ function renderClaims(claims, page = 1) {
         <div class="p-3 flex items-center justify-between cursor-pointer bg-slate-50/50" onclick="this.nextElementSibling.classList.toggle('hidden')">
           <div class="flex items-center gap-3">
              <div class="font-bold text-slate-800 text-sm">${c.claimId}</div>
-             <div class="text-xs text-slate-500">${new Date(c.timestamp).toLocaleDateString()}</div>
+             <div class="text-xs text-slate-500">${new Date(
+               c.timestamp
+             ).toLocaleDateString()}</div>
           </div>
           <div class="flex items-center gap-2">
-             <span class="${statusInfo.class} px-2 py-0.5 rounded-full text-[10px] font-medium">${c.status}</span>
+             <span class="${
+               statusInfo.class
+             } px-2 py-0.5 rounded-full text-[10px] font-medium">${
+      c.status
+    }</span>
              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
           </div>
         </div>
-        
+
         <div class="hidden p-3 border-t border-slate-100 space-y-3">
           <div class="flex justify-between items-center">
              <div class="text-xs text-slate-400">Amount</div>
@@ -146,8 +186,18 @@ function renderClaims(claims, page = 1) {
           <div class="flex justify-between items-center">
              <div class="text-xs text-slate-400">Actions</div>
              <div class="flex gap-3 items-center">
-             ${c.status === "Submitted" || c.status === "Approved" ? Utils.getSlaBadge(Utils.calculateDaysApproved(c.timestamp, c.status)) : ''}
-             ${c.receiptUrl ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg> Receipt</button>` : ''}
+             ${
+               c.status === "Submitted" || c.status === "Approved"
+                 ? Utils.getSlaBadge(
+                     Utils.calculateDaysApproved(c.timestamp, c.status)
+                   )
+                 : ""
+             }
+             ${
+               c.receiptUrl
+                 ? `<button onclick="openReceiptModal('${c.receiptUrl}')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg> Receipt</button>`
+                 : ""
+             }
              </div>
           </div>
         </div>
@@ -163,10 +213,18 @@ function renderClaims(claims, page = 1) {
     const paginationHtml = `<div class="flex justify-between items-center p-4 border-t border-slate-100 bg-slate-50 mt-4 rounded-b-xl">
         <span class="text-xs md:text-sm text-slate-500">Page ${page} of ${totalPages}</span>
         <div class="flex gap-2">
-          <button onclick="renderClaims(null, ${page - 1})" ${page === 1 ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Previous</button>
-          <button onclick="renderClaims(null, ${page + 1})" ${page === totalPages ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"' : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'} >Next</button>
+          <button onclick="renderClaims(null, ${page - 1})" ${
+      page === 1
+        ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"'
+        : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'
+    } >Previous</button>
+          <button onclick="renderClaims(null, ${page + 1})" ${
+      page === totalPages
+        ? 'disabled class="opacity-50 cursor-not-allowed px-3 py-1.5 border border-slate-300 rounded-lg bg-white text-xs md:text-sm"'
+        : 'class="px-3 py-1.5 border border-slate-300 rounded-lg bg-white hover:bg-slate-50 text-indigo-600 text-xs md:text-sm transition active:scale-95"'
+    } >Next</button>
         </div></div>`;
-    output.insertAdjacentHTML('beforeend', paginationHtml);
+    output.insertAdjacentHTML("beforeend", paginationHtml);
   }
   output.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -180,10 +238,21 @@ function applyUserFilter() {
 
 function sortClaims(field) {
   if (!State.user.claims || State.user.claims.length === 0) return;
-  if (State.user.sort.field === field) State.user.sort.direction = State.user.sort.direction === "asc" ? "desc" : "asc";
-  else { State.user.sort.field = field; State.user.sort.direction = "desc"; }
+  if (State.user.sort.field === field)
+    State.user.sort.direction =
+      State.user.sort.direction === "asc" ? "desc" : "asc";
+  else {
+    State.user.sort.field = field;
+    State.user.sort.direction = "desc";
+  }
   const dir = State.user.sort.direction === "asc" ? 1 : -1;
-  State.user.claims.sort((a, b) => field === "date" ? dir * (new Date(a.timestamp || 0) - new Date(b.timestamp || 0)) : field === "claimId" ? dir * a.claimId.localeCompare(b.claimId) : 0);
+  State.user.claims.sort((a, b) =>
+    field === "date"
+      ? dir * (new Date(a.timestamp || 0) - new Date(b.timestamp || 0))
+      : field === "claimId"
+      ? dir * a.claimId.localeCompare(b.claimId)
+      : 0
+  );
   applyUserFilter();
 }
 
@@ -200,3 +269,43 @@ function clearUserFilters() {
       <p class="text-slate-500 mb-6 max-w-sm">Enter your email address or claim ID above to view the status of your reimbursement requests.</p>
     </div>`;
 }
+
+/* ======================================================
+   LOGOUT & UI ENHANCEMENTS
+====================================================== */
+window.logout = function () {
+  localStorage.removeItem("role");
+  localStorage.removeItem("userMobile");
+  localStorage.removeItem("loginTime");
+  window.location.href = "index.html";
+};
+
+(function addLogoutButton() {
+  if (!localStorage.getItem("userMobile")) return;
+  if (document.getElementById("btn-logout")) return;
+
+  // Try to find navbar container (User pages) or header (Admin pages)
+  const navContainer = document.querySelector(
+    "nav .justify-between > div:last-child"
+  );
+  const header = document.querySelector("header");
+
+  const btn = document.createElement("button");
+  btn.id = "btn-logout";
+  btn.onclick = window.logout;
+  btn.className =
+    "text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition text-sm font-medium flex items-center gap-2";
+  btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span class="hidden sm:inline">Logout</span>`;
+
+  if (navContainer) {
+    navContainer.appendChild(btn);
+  } else if (header) {
+    const container = header.querySelector("div.flex") || header;
+    container.appendChild(btn);
+    btn.classList.add("ml-auto");
+  } else {
+    btn.className =
+      "fixed top-4 right-4 z-50 bg-white shadow-md border border-slate-100 text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl transition text-sm font-medium flex items-center gap-2";
+    document.body.appendChild(btn);
+  }
+})();

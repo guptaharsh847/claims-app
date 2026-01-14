@@ -4,7 +4,7 @@
 (function validatePath() {
   const path = window.location.pathname;
   const page = path.substring(path.lastIndexOf('/') + 1);
-  
+
   const allowedPages = [
     "",
     "index.html",
@@ -28,6 +28,7 @@ const Utils = {
     const r = localStorage.getItem("role");
     if (r === CONFIG.ROLES.ADMIN) return "ADMIN";
     if (r === CONFIG.ROLES.USER) return "USER";
+    if (r === CONFIG.ROLES.SUPER_ADMIN) return "SUPER_ADMIN";
     return null;
   },
 
@@ -35,6 +36,8 @@ const Utils = {
     if (plainRole === "ADMIN") localStorage.setItem("role", CONFIG.ROLES.ADMIN);
     else if (plainRole === "USER")
       localStorage.setItem("role", CONFIG.ROLES.USER);
+    else if (plainRole === "SUPER_ADMIN")
+      localStorage.setItem("role", CONFIG.ROLES.SUPER_ADMIN);
   },
 
   timeAgo: (date) => {
@@ -146,7 +149,7 @@ window.alert = function (message, type = "success") {
       </div>
       <h3 class="text-xl font-bold text-slate-800 mb-2">${isError ? "Error" : "Success"}</h3>
       <p class="text-slate-600 mb-8 leading-relaxed">${message}</p>
-      <button onclick="document.getElementById('custom-alert').classList.add('opacity-0'); setTimeout(() => document.getElementById('custom-alert').remove(), 300);" 
+      <button onclick="document.getElementById('custom-alert').classList.add('opacity-0'); setTimeout(() => document.getElementById('custom-alert').remove(), 300);"
         class="w-full ${btnColor} text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-100">Okay, Got it</button>
     </div>`;
   document.body.appendChild(overlay);
@@ -217,9 +220,7 @@ function closeReceiptModal() {
 /* PWA Service Worker Registration */
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
-      .then(() => console.log("Service Worker Registered"))
-      .catch((err) => console.log("Service Worker Failed", err));
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
   });
 }
 

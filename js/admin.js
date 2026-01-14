@@ -2,7 +2,7 @@ const Layout = {
   render: () => {
     const path = window.location.pathname;
     const page = path.split("/").pop() || "index.html";
-    
+
     // Inject Sidebar
     const sidebarPlaceholder = document.getElementById("sidebar-placeholder");
     if (sidebarPlaceholder) {
@@ -20,7 +20,8 @@ const Layout = {
     if (!document.getElementById("sidebar-overlay")) {
       const overlay = document.createElement("div");
       overlay.id = "sidebar-overlay";
-      overlay.className = "fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity opacity-0";
+      overlay.className =
+        "fixed inset-0 bg-slate-900/50 z-40 hidden backdrop-blur-sm transition-opacity opacity-0";
       overlay.onclick = toggleSidebar;
       document.body.prepend(overlay);
     }
@@ -28,21 +29,41 @@ const Layout = {
 
   getSidebarHtml: (currentPage) => {
     const links = [
-      { href: "admin.html", icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z", label: "Dashboard" },
-      { href: "analytics.html", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", label: "Analytics" },
-      { href: "manage-users.html", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z", label: "Manage Users" },
-      { href: "add-user.html", icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z", label: "Add User" }
+      {
+        href: "admin.html",
+        icon: "M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z",
+        label: "Dashboard",
+      },
+      {
+        href: "analytics.html",
+        icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
+        label: "Analytics",
+      },
+      {
+        href: "manage-users.html",
+        icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
+        label: "Manage Users",
+      },
+      {
+        href: "add-user.html",
+        icon: "M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z",
+        label: "Add User",
+      },
     ];
 
-    const navLinks = links.map(link => {
-      const isActive = currentPage === link.href;
-      const activeClass = isActive ? "bg-indigo-50 text-indigo-600" : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600";
-      return `
+    const navLinks = links
+      .map((link) => {
+        const isActive = currentPage === link.href;
+        const activeClass = isActive
+          ? "bg-indigo-50 text-indigo-600"
+          : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600";
+        return `
         <a href="${link.href}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${activeClass} overflow-hidden whitespace-nowrap">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${link.icon}" /></svg>
           <span class="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">${link.label}</span>
         </a>`;
-    }).join("");
+      })
+      .join("");
 
     return `
       <aside id="sidebar" class="fixed md:relative z-50 w-64 md:w-20 md:hover:w-64 h-full bg-white border-r border-slate-200 transform -translate-x-full md:translate-x-0 transition-all duration-300 flex flex-col shadow-2xl md:shadow-none group">
@@ -84,14 +105,14 @@ const Layout = {
         </div>
      </header>`;
   },
-  
+
   getPageTitle: (page) => {
     if (page.includes("admin")) return "Dashboard";
     if (page.includes("analytics")) return "Analytics";
     if (page.includes("manage-users")) return "Manage Users";
     if (page.includes("add-user")) return "Add User";
     return "Portal";
-  }
+  },
 };
 
 // Initialize Layout
@@ -100,7 +121,7 @@ Layout.render();
 function toggleSidebar() {
   const sidebar = document.getElementById("sidebar");
   const overlay = document.getElementById("sidebar-overlay");
-  
+
   if (sidebar.classList.contains("-translate-x-full")) {
     sidebar.classList.remove("-translate-x-full");
     overlay.classList.remove("hidden", "opacity-0");
@@ -129,7 +150,6 @@ async function loadClaims() {
     State.admin.claims = data || [];
     renderAdminClaims(State.admin.claims, 1);
   } catch (err) {
-    console.error(err);
     claimsDiv.innerHTML =
       '<div class="p-8 text-center text-red-500">Error loading claims.</div>';
   }
@@ -240,10 +260,14 @@ function renderAdminClaims(claims, page = 1) {
     }')" title="Copy Claim ID" class="text-slate-400 hover:text-indigo-600 transition p-1 rounded hover:bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div></td>
           <td class="px-4 py-3 text-slate-600 whitespace-nowrap">
             <div>${c.email}</div>
-            ${c.upiId ? `<div class="text-xs text-slate-400 mt-0.5">UPI: ${c.upiId}</div>` : ''}
+            ${
+              c.upiId
+                ? `<div class="text-xs text-slate-400 mt-0.5">UPI: ${c.upiId}</div>`
+                : ""
+            }
           </td><td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">₹${
-      c.amount
-    }</td>
+            c.amount
+          }</td>
           <td class="px-4 py-3 font-medium whitespace-nowrap"><span class="px-2 py-1 rounded-full text-xs ${
             statusInfo.class
           }">${c.status}</span></td>
@@ -292,14 +316,18 @@ function renderAdminClaims(claims, page = 1) {
       c.claimId
     }')" class="text-slate-400 active:text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg></button></div>
                 <div class="text-xs text-slate-500">${c.email}</div>
-                ${c.upiId ? `<div class="text-xs text-slate-400">UPI: ${c.upiId}</div>` : ''}
+                ${
+                  c.upiId
+                    ? `<div class="text-xs text-slate-400">UPI: ${c.upiId}</div>`
+                    : ""
+                }
              </div>
           </div>
           <span class="${
             statusInfo.class
           } px-2 py-1 rounded-full text-xs font-medium">${c.status}</span>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-2 mt-1">
            <div>
              <div class="text-xs text-slate-400">Amount</div>
@@ -325,7 +353,7 @@ function renderAdminClaims(claims, page = 1) {
     } p-2 rounded-lg"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg></button>
            </div>
         </div>
-        
+
         <div class="mt-2">
            ${
              c.status === "Declined" || c.status === "Reimbursed"
@@ -394,7 +422,6 @@ async function updateStatus(claimId, status) {
         showToast("Status updated successfully");
         loadClaims();
       } catch (err) {
-        console.error(err);
         alert("Failed to update status", "error");
       }
     },
@@ -441,7 +468,6 @@ async function applyBulkAction() {
       showToast("Bulk status updated successfully");
       loadClaims();
     } catch (err) {
-      console.error(err);
       showToast("Bulk update failed", "error");
     }
   });
@@ -482,13 +508,14 @@ function buildWhatsAppMessage(claim) {
     claim.email || "N/A"
   }\nDepartment : ${claim.department || "N/A"}\nAmount     : ₹${
     claim.amount
-  }\nUPI ID: ${claim.upiId || "N/A"}\nDescription: ${claim.description || "N/A"}\nReceipt    : ${
-    claim.receiptUrl || "Not Uploaded"
-  }\n\nYour Servant`;
+  }\nUPI ID: ${claim.upiId || "N/A"}\nDescription: ${
+    claim.description || "N/A"
+  }\nReceipt    : ${claim.receiptUrl || "Not Uploaded"}\n\nYour Servant`;
 }
 
 function openManageUsers() {
-  if (localStorage.getItem("role") === CONFIG.ROLES.ADMIN)
+  const r = localStorage.getItem("role");
+  if (r === CONFIG.ROLES.ADMIN || r === CONFIG.ROLES.SUPER_ADMIN)
     window.location.href = "manage-users.html";
   else window.location.href = "login.html";
 }
@@ -499,7 +526,8 @@ function filterUsers() {
 }
 
 async function loadUsers() {
-  if (Utils.getDecodedRole() !== "ADMIN") return;
+  const role = Utils.getDecodedRole();
+  if (role !== "ADMIN" && role !== "SUPER_ADMIN") return;
   const tbody = document.getElementById("users-table-body");
   if (!tbody) return;
   try {
@@ -516,6 +544,7 @@ async function loadUsers() {
 }
 
 function renderUsers(page = 1, searchTerm = "") {
+  State.users.page = page;
   const tbody = document.getElementById("users-table-body");
   const paginationDiv = document.getElementById("users-pagination");
   let users = State.users.list;
@@ -524,6 +553,18 @@ function renderUsers(page = 1, searchTerm = "") {
   const currentUserMobile = localStorage.getItem("userMobile");
   if (currentUserMobile) {
     users = users.filter((u) => String(u.mobile) !== String(currentUserMobile));
+  }
+
+  // Filter out Super Admin if current user is not Super Admin
+  const isSuper =
+    String(currentUserMobile) === String(CONFIG.SUPER_ADMIN) ||
+    Utils.getDecodedRole() === "SUPER_ADMIN";
+  if (!isSuper) {
+    users = users.filter(
+      (u) =>
+        String(u.mobile) !== String(CONFIG.SUPER_ADMIN) &&
+        u.role !== "SUPER_ADMIN"
+    );
   }
 
   if (searchTerm) {
@@ -555,16 +596,48 @@ function renderUsers(page = 1, searchTerm = "") {
         ? "bg-green-50 text-green-700 border border-green-100"
         : "bg-red-50 text-red-700 border border-red-100";
 
+    // Super Admin & User Lock Logic
+    const isSuperUser = u.role === "SUPER_ADMIN";
+    const isUser = u.role === "USER";
+    const permDisabled = isSuperUser || isUser ? "disabled" : "";
+    const permClass =
+      isSuperUser || isUser ? "opacity-50 cursor-not-allowed" : "";
+
     // Permissions Logic
     // Robust check: handles if permissions are in a nested object OR flat properties
     const p = u.permissions || u;
-    const canAdd =
-      p.canAddUser === true || p.canAddUser === "TRUE" ? "checked" : "";
-    const canManage =
-      p.canManageUser === true || p.canManageUser === "TRUE" ? "checked" : "";
-    const canAnalytics =
-      p.canViewAnalytics === true || p.canViewAnalytics === "TRUE"
-        ? "checked"
+    let canAdd = "",
+      canManage = "",
+      canAnalytics = "";
+
+    if (isSuperUser) {
+      canAdd = "checked";
+      canManage = "checked";
+      canAnalytics = "checked";
+    } else if (!isUser) {
+      canAdd =
+        p.canAddUser === true || p.canAddUser === "TRUE" ? "checked" : "";
+      canManage =
+        p.canManageUser === true || p.canManageUser === "TRUE" ? "checked" : "";
+      canAnalytics =
+        p.canViewAnalytics === true || p.canViewAnalytics === "TRUE"
+          ? "checked"
+          : "";
+    }
+
+    const saveBtnDisabled = isSuperUser || isUser ? "disabled" : "";
+    const saveBtnClass =
+      isSuperUser || isUser
+        ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+        : "text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm";
+
+    const deleteBtn =
+      isSuper && String(u.mobile) !== String(CONFIG.SUPER_ADMIN)
+        ? `<button onclick="deleteUser('${u.mobile}')" class="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition ml-1" title="Delete User">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>`
         : "";
 
     // Desktop Row
@@ -582,28 +655,35 @@ function renderUsers(page = 1, searchTerm = "") {
       u.role === "USER" ? "selected" : ""
     }>USER</option><option value="ADMIN" ${
       u.role === "ADMIN" ? "selected" : ""
-    }>ADMIN</option></select></td>
+    }>ADMIN</option>${
+      isSuper
+        ? `<option value="SUPER_ADMIN" ${
+            u.role === "SUPER_ADMIN" ? "selected" : ""
+          }>SUPER_ADMIN</option>`
+        : ""
+    }</select></td>
           <td class="px-4 py-3 whitespace-nowrap"><span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">${
       u.status
     }</span></td>
-          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${
-            u.mobile
-          }" data-type="canAddUser" ${canAdd}></td>
-          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${
-            u.mobile
-          }" data-type="canManageUser" ${canManage}></td>
-          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" data-email="${
-            u.mobile
-          }" data-type="canViewAnalytics" ${canAnalytics}></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canAddUser" ${canAdd} ${permDisabled}></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canManageUser" ${canManage} ${permDisabled}></td>
+          <td class="px-4 py-3 text-center"><input type="checkbox" class="perm-check w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canViewAnalytics" ${canAnalytics} ${permDisabled}></td>
           <td class="px-4 py-3 whitespace-nowrap flex items-center gap-2">
-            <button onclick="saveUserPermissions('${
-              u.mobile
-            }', this)" class="text-white bg-indigo-600 hover:bg-indigo-700 font-medium text-xs px-3 py-1 rounded transition shadow-sm">Save</button>
+            <button ${saveBtnDisabled} onclick="saveUserPermissions('${
+      u.mobile
+    }', this)" class="${saveBtnClass} font-medium text-xs px-3 py-1 rounded transition">Save</button>
             <button onclick="toggleUser('${u.mobile}', '${
       u.status
     }')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">${
       u.status === "ACTIVE" ? "Disable" : "Enable"
     }</button>
+            ${deleteBtn}
           </td></tr>`;
 
     // Mobile Card
@@ -619,7 +699,7 @@ function renderUsers(page = 1, searchTerm = "") {
       u.status
     }</span>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-3 items-center border-t border-slate-50 pt-3">
            <select onchange="changeRole('${
              u.mobile
@@ -627,30 +707,43 @@ function renderUsers(page = 1, searchTerm = "") {
       u.role === "USER" ? "selected" : ""
     }>USER</option><option value="ADMIN" ${
       u.role === "ADMIN" ? "selected" : ""
-    }>ADMIN</option></select>
-           <button onclick="toggleUser('${u.mobile}', '${
+    }>ADMIN</option>${
+      isSuper
+        ? `<option value="SUPER_ADMIN" ${
+            u.role === "SUPER_ADMIN" ? "selected" : ""
+          }>SUPER_ADMIN</option>`
+        : ""
+    }</select>
+           <div class="flex gap-2">
+             <button onclick="toggleUser('${u.mobile}', '${
       u.status
-    }')" class="text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded transition w-full text-center">${
+    }')" class="flex-1 text-indigo-600 hover:text-indigo-900 font-medium text-xs border border-indigo-200 hover:bg-indigo-50 px-3 py-2 rounded transition text-center">${
       u.status === "ACTIVE" ? "Disable Account" : "Enable Account"
     }</button>
+             ${
+               isSuper && String(u.mobile) !== String(CONFIG.SUPER_ADMIN)
+                 ? `<button onclick="deleteUser('${u.mobile}')" class="text-red-600 border border-red-200 hover:bg-red-50 px-3 rounded-lg transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>`
+                 : ""
+             }
+           </div>
         </div>
 
         <div class="bg-slate-50 p-3 rounded-lg">
            <div class="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Permissions</div>
            <div class="flex flex-wrap gap-4">
-             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${
-               u.mobile
-             }" data-type="canAddUser" ${canAdd}> Add User</label>
-             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${
-               u.mobile
-             }" data-type="canManageUser" ${canManage}> Manage</label>
-             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600" data-email="${
-               u.mobile
-             }" data-type="canViewAnalytics" ${canAnalytics}> Analytics</label>
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canAddUser" ${canAdd} ${permDisabled}> Add User</label>
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canManageUser" ${canManage} ${permDisabled}> Manage</label>
+             <label class="flex items-center gap-2 text-xs"><input type="checkbox" class="perm-check rounded border-slate-300 text-indigo-600 ${permClass}" data-email="${
+      u.mobile
+    }" data-type="canViewAnalytics" ${canAnalytics} ${permDisabled}> Analytics</label>
            </div>
-           <button onclick="saveUserPermissions('${
-             u.mobile
-           }', this)" class="mt-3 w-full text-white bg-indigo-600 hover:bg-indigo-700 font-medium text-xs px-3 py-2 rounded transition shadow-sm">Save Permissions</button>
+           <button ${saveBtnDisabled} onclick="saveUserPermissions('${
+      u.mobile
+    }', this)" class="mt-3 w-full ${saveBtnClass} font-medium text-xs px-3 py-2 rounded transition">Save Permissions</button>
         </div>
       </div>
     `;
@@ -682,8 +775,20 @@ function renderUsers(page = 1, searchTerm = "") {
 }
 
 async function addUser() {
-  if (Utils.getDecodedRole() !== "ADMIN") {
+  const role = Utils.getDecodedRole();
+  if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
     alert("Unauthorized action", "error");
+    return;
+  }
+
+  const name = document.getElementById("u-name").value.trim();
+  const mobile = document.getElementById("u-mobile").value.trim();
+  const email = document.getElementById("u-email").value.trim();
+  const password = document.getElementById("u-password").value.trim();
+  const newRole = document.getElementById("u-role").value;
+
+  if (!name || !mobile || !email || !password || !newRole) {
+    alert("All fields are required", "error");
     return;
   }
 
@@ -696,14 +801,24 @@ async function addUser() {
     btn.classList.add("opacity-70", "cursor-not-allowed");
   }
 
+  if (newRole === "SUPER_ADMIN" && Utils.getDecodedRole() !== "SUPER_ADMIN") {
+    alert("Only Super Admins can create Super Admin accounts", "error");
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.classList.remove("opacity-70", "cursor-not-allowed");
+    }
+    return;
+  }
+
   try {
     const data = {
       action: "addUser",
-      name: document.getElementById("u-name").value,
-      mobile: document.getElementById("u-mobile").value,
-      email: document.getElementById("u-email").value,
-      password: document.getElementById("u-password").value,
-      role: document.getElementById("u-role").value,
+      name: name,
+      mobile: mobile,
+      email: email,
+      password: password,
+      role: newRole,
       canAddUser: document.getElementById("u-canAddUser")?.checked || false,
       canViewAnalytics:
         document.getElementById("u-canViewAnalytics")?.checked || false,
@@ -727,17 +842,58 @@ async function addUser() {
 }
 
 async function toggleUser(mobile, currentStatus) {
+  if (String(mobile) === String(CONFIG.SUPER_ADMIN)) {
+    alert("Action not allowed on Super Admin account", "error");
+    return;
+  }
   const status = currentStatus === "ACTIVE" ? "DISABLED" : "ACTIVE";
   await Api.post({ action: "updateUserStatus", mobile, status });
   alert(`User ${status.toLowerCase()} successfully`);
   loadUsers();
 }
 
-async function changeRole(mobile, role) {
-  await Api.post({ action: "changeUserRole", mobile, role });
+async function deleteUser(mobile) {
+  showConfirm(
+    "Are you sure you want to permanently delete this user? This action cannot be undone.",
+    async () => {
+      try {
+        const res = await Api.post({
+          action: "deleteUser",
+          targetMobile: mobile,
+        });
+        if (res.result === "success") {
+          alert("User deleted successfully");
+          loadUsers();
+        } else {
+          alert(res.message || "Failed to delete user", "error");
+        }
+      } catch (err) {
+        alert("Error deleting user", "error");
+      }
+    }
+  );
+}
+function changeRole(mobile, role) {
+  if (String(mobile) === String(CONFIG.SUPER_ADMIN)) {
+    alert("Action not allowed on Super Admin account", "error");
+    loadUsers(); // Reload to reset UI
+    return;
+  }
+  if (role === "SUPER_ADMIN" && Utils.getDecodedRole() !== "SUPER_ADMIN") {
+    alert("Only Super Admins can promote users to Super Admin", "error");
+    loadUsers(); // Reload to reset UI
+    return;
+  }
+  Api.post({ action: "changeUserRole", mobile, role });
+
+  const user = State.users.list.find(
+    (u) => String(u.mobile) === String(mobile)
+  );
+  if (user) user.role = role;
+
   if (localStorage.getItem("userMobile") === mobile) {
     Utils.setEncodedRole(role);
-    if (role !== "ADMIN") {
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
       alert("Your role has been updated. Redirecting...");
       setTimeout(() => {
         window.location.href = "index.html";
@@ -746,6 +902,9 @@ async function changeRole(mobile, role) {
     }
   }
   alert("Role updated successfully");
+  const searchTerm =
+    document.getElementById("userSearch")?.value.toLowerCase() || "";
+  renderUsers(State.users.page, searchTerm);
 }
 
 function exportToCSV() {
@@ -794,6 +953,11 @@ function exportToCSV() {
 }
 
 async function saveUserPermissions(mobile, btn) {
+  if (String(mobile) === String(CONFIG.SUPER_ADMIN)) {
+    alert("Action not allowed on Super Admin account", "error");
+    return;
+  }
+
   const originalText = btn.innerText;
   btn.innerText = "Saving...";
   btn.disabled = true;
@@ -810,12 +974,11 @@ async function saveUserPermissions(mobile, btn) {
   checkboxes.forEach((cb) => {
     perms[cb.dataset.type] = cb.checked;
   });
-  console.log("...perms", perms);
   try {
     const res = await Api.post({
       action: "updatePermissions",
       targetMobile: mobile,
-      perms:perms,
+      perms: perms,
     });
     if (res.result === "success") {
       btn.innerText = "Saved!";
@@ -831,7 +994,6 @@ async function saveUserPermissions(mobile, btn) {
       throw new Error(res.message || "Failed");
     }
   } catch (err) {
-    console.error(err);
     btn.innerText = "Error";
     btn.classList.add("bg-red-600");
     setTimeout(() => {
@@ -850,6 +1012,18 @@ async function applyDashboardPermissions() {
   const manageLink = document.querySelector('a[href="manage-users.html"]');
   const addUserLink = document.querySelector('a[href="add-user.html"]');
   const statsDiv = document.getElementById("admin-stats");
+
+  // Super Admin Bypass: Always show everything
+  if (
+    String(userMobile) === String(CONFIG.SUPER_ADMIN) ||
+    Utils.getDecodedRole() === "SUPER_ADMIN"
+  ) {
+    if (manageLink) manageLink.style.display = "flex";
+    if (analyticsLink) analyticsLink.style.display = "flex";
+    if (addUserLink) addUserLink.style.display = "flex";
+    if (statsDiv) statsDiv.style.display = "";
+    return;
+  }
 
   // Hide immediately to prevent flickering (Flash of Unauthorized Content)
   if (manageLink) manageLink.style.display = "none";
@@ -872,20 +1046,18 @@ async function applyDashboardPermissions() {
       const canAdd = p.canAddUser === true || p.canAddUser === "TRUE";
 
       if (manageLink) manageLink.style.display = canManage ? "flex" : "none";
-      if (analyticsLink) analyticsLink.style.display = canAnalytics ? "flex" : "none";
+      if (analyticsLink)
+        analyticsLink.style.display = canAnalytics ? "flex" : "none";
       if (addUserLink) addUserLink.style.display = canAdd ? "flex" : "none";
       if (statsDiv) statsDiv.style.display = canAnalytics ? "" : "none";
     }
-  } catch (err) {
-    console.error("Error applying permissions", err);
-  }
+  } catch (err) {}
 }
 
 if (document.getElementById("claims")) {
   applyDashboardPermissions();
   loadClaims();
 }
-
 if (document.getElementById("users-table-body")) {
   loadUsers();
   applyDashboardPermissions();
@@ -915,6 +1087,14 @@ async function verifyPageAccess() {
     return;
   }
 
+  if (
+    String(userMobile) === String(CONFIG.SUPER_ADMIN) ||
+    Utils.getDecodedRole() === "SUPER_ADMIN"
+  ) {
+    revealPage();
+    return;
+  }
+
   try {
     const response = await Api.get({ action: "getUsers" });
     const users = Array.isArray(response) ? response : response.users || [];
@@ -934,7 +1114,6 @@ async function verifyPageAccess() {
       revealPage();
     }
   } catch (err) {
-    console.error("Access verification failed", err);
     window.location.href = "404.html";
   }
 }

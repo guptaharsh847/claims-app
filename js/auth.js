@@ -22,7 +22,7 @@ async function login() {
       localStorage.setItem("userMobile", mobile);
       localStorage.setItem("loginTime", Date.now());
       setTimeout(() => {
-        window.location.href = data.role === "ADMIN" ? "admin.html" : "claim.html";
+        window.location.href = (data.role === "ADMIN" || data.role === "SUPER_ADMIN") ? "admin.html" : "claim.html";
       }, 800);
     } else if (data.status === "success" && data.userStatus !== "ACTIVE") {
       msg.className = "mt-4 text-center text-sm font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg border border-red-100";

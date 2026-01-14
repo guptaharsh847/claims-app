@@ -10,8 +10,8 @@ const ASSETS = [
   "./js/config.js",
   "./js/auth.js",
   "https://cdn.tailwindcss.com",
-  "./images/icon-192.png",
-  "./images/icon-512.png"
+  "./images/icon-192-192x192.png",
+  "./images/icon-192-512x512.png"
 ];
 
 self.addEventListener("install", (e) => {
