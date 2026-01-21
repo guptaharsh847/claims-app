@@ -1,168 +1,312 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Claims Portal</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="theme-color" content="#4f46e5">
-  <link rel="manifest" href="manifest.json">
-  <script>
-    // Redirect to login if not authenticated as ADMIN
-    // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
-    if (localStorage.getItem("role") !== "X9fK2pL5mQ8jR3t") {
-      window.location.replace("login.html");
-    }
-  </script>
-</head>
-<body class="bg-slate-50 h-screen flex overflow-hidden font-sans text-slate-900 antialiased">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Claims Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="theme-color" content="#4f46e5" />
+    <link rel="manifest" href="manifest.json" />
+    <script>
+      // Redirect to login if not authenticated as ADMIN
+      // Checking against hash: X9fK2pL5mQ8jR3t (ADMIN)
+      const role = localStorage.getItem("role");
+      console.log("Current Role Hash:", role);
+      if (role !== "X9fK2pL5mQ8jR3t" && role !== "Z8xL1mP9qR4tK7w") {
+        window.location.replace("login.html");
+      }
+    </script>
+  </head>
+  <body
+    class="bg-slate-50 h-screen flex overflow-hidden font-sans text-slate-900 antialiased"
+  >
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar-placeholder"></div>
 
-  <!-- Sidebar Placeholder -->
-  <div id="sidebar-placeholder"></div>
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Header Placeholder -->
+      <div id="header-placeholder"></div>
 
-  <!-- Main Content -->
-  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-     <!-- Header Placeholder -->
-     <div id="header-placeholder"></div>
-
-     <!-- Scrollable Content -->
-     <main class="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth">
-        
+      <!-- Scrollable Content -->
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth">
         <!-- KPI Stats (Grid) -->
         <div id="admin-stats" class="mb-6"></div>
 
         <!-- Claims Table Card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-           
-           <!-- Toolbar (Filters) -->
-           <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-              <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                 
-                 <!-- Bulk Actions -->
-                 <div class="flex items-center gap-2 w-full xl:w-auto">
-                    <div class="relative flex-1 xl:w-48">
-                       <select id="bulkAction" class="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-10">
-                          <option value="">Bulk Action</option>
-                          <option value="Submitted">Mark Submitted</option>
-                          <option value="Approved">Mark Approved</option>
-                          <option value="Declined">Decline</option>
-                          <option value="Reimbursed">Reimburse</option>
-                       </select>
-                       <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                       </div>
-                    </div>
-                    <button onclick="applyBulkAction()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 rounded-lg text-sm font-medium h-10 transition shadow-sm">Apply</button>
-                 </div>
-
-                 <!-- Filters & Controls -->
-                 <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
-                    <!-- Sort -->
-                    <button onclick="sortAdminClaims('claimId')" class="flex-1 xl:flex-none bg-white border border-slate-300 text-slate-700 px-3 rounded-lg hover:bg-slate-50 transition text-sm font-medium h-10 flex items-center justify-center gap-2 whitespace-nowrap">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" /></svg>
-                       Sort ID <span id="adminIdArrow" class="text-xs text-slate-400"></span>
-                    </button>
-
-                    <!-- Status Filter -->
-                    <div class="relative flex-1 xl:w-40">
-                       <select id="statusFilter" onchange="loadClaims()" class="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-10">
-                          <option value="">All Status</option>
-                          <option value="Submitted">Submitted</option>
-                          <option value="Approved">Approved</option>
-                          <option value="Declined">Declined</option>
-                          <option value="Reimbursed">Reimbursed</option>
-                       </select>
-                       <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-                          <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                       </div>
-                    </div>
-
-                    <!-- Clear -->
-                    <button onclick="clearAdminFilters()" class="bg-white border border-red-200 text-red-600 px-3 rounded-lg hover:bg-red-50 transition text-sm font-medium h-10 whitespace-nowrap" title="Clear Filters">
-                       Clear
-                    </button>
-
-                    <!-- Export -->
-                    <button onclick="exportToCSV()" class="bg-white border border-slate-300 text-slate-700 px-3 rounded-lg hover:bg-slate-50 transition text-sm font-medium h-10 flex items-center justify-center gap-2 whitespace-nowrap" title="Export CSV">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                       CSV
-                    </button>
-                 </div>
+        <div
+          class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden"
+        >
+          <!-- Toolbar (Filters) -->
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50">
+            <div
+              class="flex flex-col xl:flex-row xl:items-center justify-between gap-4"
+            >
+              <!-- Bulk Actions -->
+              <div class="flex items-center gap-2 w-full xl:w-auto">
+                <div class="relative flex-1 xl:w-48">
+                  <select
+                    id="bulkAction"
+                    class="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-10"
+                  >
+                    <option value="">Bulk Action</option>
+                    <option value="Submitted">Mark Submitted</option>
+                    <option value="Approved">Mark Approved</option>
+                    <option value="Declined">Decline</option>
+                    <option value="Reimbursed">Reimburse</option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500"
+                  >
+                    <svg
+                      class="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <button
+                  onclick="applyBulkAction()"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 rounded-lg text-sm font-medium h-10 transition shadow-sm"
+                >
+                  Apply
+                </button>
               </div>
-           </div>
 
-           <!-- Table Container -->
-           <div id="claims" class="flex-1 overflow-auto min-h-[300px]"></div>
-           <div id="admin-pagination"></div>
+              <!-- Filters & Controls -->
+              <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+                <!-- Sort -->
+                <button
+                  onclick="sortAdminClaims('claimId')"
+                  class="flex-1 xl:flex-none bg-white border border-slate-300 text-slate-700 px-3 rounded-lg hover:bg-slate-50 transition text-sm font-medium h-10 flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-slate-500"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                    />
+                  </svg>
+                  Sort ID
+                  <span id="adminIdArrow" class="text-xs text-slate-400"></span>
+                </button>
+
+                <!-- Status Filter -->
+                <div class="relative flex-1 xl:w-40">
+                  <select
+                    id="statusFilter"
+                    onchange="loadClaims()"
+                    class="appearance-none w-full bg-white border border-slate-300 text-slate-700 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm h-10"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Submitted">Submitted</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Declined">Declined</option>
+                    <option value="Reimbursed">Reimbursed</option>
+                  </select>
+                  <div
+                    class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500"
+                  >
+                    <svg
+                      class="h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Clear -->
+                <button
+                  onclick="clearAdminFilters()"
+                  class="bg-white border border-red-200 text-red-600 px-3 rounded-lg hover:bg-red-50 transition text-sm font-medium h-10 whitespace-nowrap"
+                  title="Clear Filters"
+                >
+                  Clear
+                </button>
+
+                <!-- Export -->
+                <button
+                  onclick="exportToCSV()"
+                  class="bg-white border border-slate-300 text-slate-700 px-3 rounded-lg hover:bg-slate-50 transition text-sm font-medium h-10 flex items-center justify-center gap-2 whitespace-nowrap"
+                  title="Export CSV"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div id="claims" class="flex-1 overflow-auto min-h-[300px]"></div>
+          <div id="admin-pagination"></div>
         </div>
-     </main>
-  </div>
-
-<!-- WhatsApp Modal -->
-<div
-  id="wa-modal"
-  class="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm hidden transition-opacity"
->
-  <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 transform transition-transform scale-100">
-    <div class="flex items-center justify-between mb-5">
-      <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
-        </svg>
-        Send WhatsApp
-      </h3>
-      <button onclick="closeWaModal()" class="text-slate-400 hover:text-slate-600 transition p-1 rounded-full hover:bg-slate-100">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-        </svg>
-      </button>
+      </main>
     </div>
 
-    <p class="text-sm text-slate-500 mb-4">Select recipients to notify:</p>
+    <!-- WhatsApp Modal -->
+    <div
+      id="wa-modal"
+      class="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm hidden transition-opacity"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 transform transition-transform scale-100"
+      >
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-green-500"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.506-.669-.514-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.876 1.213 3.074.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.084 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"
+              />
+            </svg>
+            Send WhatsApp
+          </h3>
+          <button
+            onclick="closeWaModal()"
+            class="text-slate-400 hover:text-slate-600 transition p-1 rounded-full hover:bg-slate-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
 
-    <div class="space-y-3 mb-6">
-      <label class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group">
-        <input type="checkbox" id="wa-agp" checked class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
-        <div class="ml-3">
-          <span class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700">Anant Gaurang Pr</span>
-          <span class="block text-xs text-slate-400"></span>
-        </div>
-      </label>
+        <p class="text-sm text-slate-500 mb-4">Select recipients to notify:</p>
 
-      <label class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group">
-        <input type="checkbox" id="wa-rcp" class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
-        <div class="ml-3">
-          <span class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700">Ramcharan Pr</span>
-          <span class="block text-xs text-slate-400"></span>
+        <div class="space-y-3 mb-6">
+          <label
+            class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group"
+          >
+            <input
+              type="checkbox"
+              id="wa-agp"
+              checked
+              class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+            />
+            <div class="ml-3">
+              <span
+                class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700"
+                >Anant Gaurang Pr</span
+              >
+              <span class="block text-xs text-slate-400"></span>
+            </div>
+          </label>
+
+          <label
+            class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group"
+          >
+            <input
+              type="checkbox"
+              id="wa-rcp"
+              class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+            />
+            <div class="ml-3">
+              <span
+                class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700"
+                >Ramcharan Pr</span
+              >
+              <span class="block text-xs text-slate-400"></span>
+            </div>
+          </label>
+          <label
+            class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group"
+          >
+            <input
+              type="checkbox"
+              id="wa-hgp"
+              class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+            />
+            <div class="ml-3">
+              <span
+                class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700"
+                >Harsh Gupta Pr</span
+              >
+              <span class="block text-xs text-slate-400"></span>
+            </div>
+          </label>
         </div>
-      </label>
-      <label class="flex items-center p-3 border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer transition group">
-        <input type="checkbox" id="wa-hgp" class="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500">
-        <div class="ml-3">
-          <span class="block text-sm font-medium text-slate-700 group-hover:text-indigo-700">Harsh Gupta Pr</span>
-          <span class="block text-xs text-slate-400"></span>
+
+        <div class="flex justify-end gap-3">
+          <button
+            onclick="closeWaModal()"
+            class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition"
+          >
+            Cancel
+          </button>
+          <button
+            onclick="sendWhatsAppToSelected()"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium flex items-center gap-2"
+          >
+            <span>Send Message</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+              />
+            </svg>
+          </button>
         </div>
-      </label>
+      </div>
     </div>
 
-    <div class="flex justify-end gap-3">
-      <button onclick="closeWaModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium text-sm transition">
-        Cancel
-      </button>
-      <button onclick="sendWhatsAppToSelected()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm transition text-sm font-medium flex items-center gap-2">
-        <span>Send Message</span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-      </button>
-    </div>
-  </div>
-</div>
-
-  <script src="js/config.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/admin.js"></script>
-</body>
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
 </html>

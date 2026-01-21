@@ -5,7 +5,9 @@ const CONFIG = {
   ROLES: {
     ADMIN: "X9fK2pL5mQ8jR3t",
     USER: "B2vN9kM4lP7oJ5h",
+    SUPER_ADMIN: "Z8xL1mP9qR4tK7w",
   },
+  SUPER_ADMIN: "919893412481",
   PAGINATION: {
     USERS: 10,
     CLAIMS: 15,

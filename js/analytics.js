@@ -9,13 +9,12 @@ async function initAnalytics() {
   try {
     const data = await Api.get({ action: "adminClaims" });
     allClaims = data || [];
-    
+
     loading.classList.add("hidden");
     content.classList.remove("hidden");
-    
+
     updateAnalytics();
   } catch (err) {
-    console.error(err);
     loading.innerHTML = '<p class="text-red-500">Failed to load analytics data.</p>';
   }
 }
@@ -23,7 +22,7 @@ async function initAnalytics() {
 function filterClaimsByDate(claims, range) {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
+
   return claims.filter(c => {
     const date = Utils.parseClaimDate(c.claimId);
     if (!date) return false; // Exclude claims with invalid ID formats
@@ -33,26 +32,26 @@ function filterClaimsByDate(claims, range) {
         const sevenDaysAgo = new Date(today);
         sevenDaysAgo.setDate(today.getDate() - 7);
         return date >= sevenDaysAgo;
-      
+
       case "30days":
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
         return date >= thirtyDaysAgo;
-      
+
       case "thisMonth":
         return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
-      
+
       case "lastMonth":
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         const endLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
         return date >= lastMonth && date <= endLastMonth;
-      
+
       case "thisYear":
         return date.getFullYear() === today.getFullYear();
-      
+
       case "lastYear":
         return date.getFullYear() === today.getFullYear() - 1;
-      
+
       case "all":
       default:
         return true;
@@ -72,10 +71,10 @@ function updateAnalytics() {
 function updateKPIs(claims) {
   const total = claims.length;
   const amount = claims.reduce((sum, c) => sum + (parseFloat(String(c.amount).replace(/,/g, '')) || 0), 0);
-  
+
   const approved = claims.filter(c => c.status === "Approved" || c.status === "Reimbursed").length;
   const pending = claims.filter(c => c.status === "Submitted").length;
-  
+
   const rate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
   document.getElementById("kpi-total").textContent = total;
@@ -87,7 +86,7 @@ function updateKPIs(claims) {
 function renderStatusChart(claims) {
   const ctx = document.getElementById("statusChart");
   const counts = { Submitted: 0, Approved: 0, Declined: 0, Reimbursed: 0 };
-  
+
   claims.forEach(c => {
     if (counts[c.status] !== undefined) counts[c.status]++;
   });
@@ -116,17 +115,17 @@ function renderStatusChart(claims) {
 
 function renderTrendChart(claims, range) {
   const ctx = document.getElementById("trendChart");
-  
+
   // Group by date
   const grouped = {};
   claims.forEach(c => {
     const date = Utils.parseClaimDate(c.claimId);
     if (!date) return;
     // Format: MMM DD for short ranges, MMM YYYY for long ranges
-    const key = range === 'thisYear' || range === 'lastYear' || range === 'all' 
+    const key = range === 'thisYear' || range === 'lastYear' || range === 'all'
       ? date.toLocaleString('default', { month: 'short', year: 'numeric' })
       : date.toLocaleString('default', { month: 'short', day: 'numeric' });
-      
+
     grouped[key] = (grouped[key] || 0) + 1;
   });
 
@@ -144,7 +143,7 @@ function renderTrendChart(claims, range) {
   claims.forEach(c => {
     const date = Utils.parseClaimDate(c.claimId);
     if (!date) return;
-    const key = range === 'thisYear' || range === 'lastYear' || range === 'all' 
+    const key = range === 'thisYear' || range === 'lastYear' || range === 'all'
       ? date.toLocaleString('default', { month: 'short', year: 'numeric' })
       : date.toLocaleString('default', { month: 'short', day: 'numeric' });
     sortedGrouped[key] = (sortedGrouped[key] || 0) + 1;
