@@ -1114,7 +1114,8 @@ async function verifyPageAccess() {
       revealPage();
     }
   } catch (err) {
-    window.location.href = "404.html";
+    console.error("Permission verification failed:", err);
+    document.body.innerHTML = `<div class="p-8 flex flex-col items-center justify-center h-screen bg-slate-50"><div class="bg-white p-8 rounded-2xl shadow-xl max-w-md text-center"><h2 class="text-2xl font-bold text-red-600 mb-4">Connection Error</h2><p class="text-slate-600 mb-6">Failed to connect to the server to verify permissions. Please check your network connection, disable ad-blockers, or contact the administrator.</p><button onclick="window.location.href='index.html'" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium">Go Home</button></div></div>`;
   }
 }
 
