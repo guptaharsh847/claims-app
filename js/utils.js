@@ -18,9 +18,9 @@
     "404.html"
   ];
 
-  if (!allowedPages.includes(page)) {
-    window.location.replace("404.html");
-  }
+  // if (!allowedPages.includes(page)) {
+  //   window.location.replace("404.html");
+  // }
 })();
 
 const Utils = {
